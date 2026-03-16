@@ -2,430 +2,438 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>단어 매칭 게임</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root {
-    --bg: #0f0f1a;
-    --surface: #1a1a2e;
-    --surface2: #16213e;
-    --accent: #e94560;
-    --accent2: #0f3460;
-    --accent3: #533483;
-    --gold: #f5a623;
-    --green: #2ecc71;
-    --red: #e74c3c;
-    --blue: #3498db;
-    --text: #eaeaea;
-    --text-muted: #888aaa;
-    --card-border: rgba(255,255,255,0.08);
-    --radius: 14px;
-    --radius-sm: 8px;
+    --bg: #f0f4ff;
+    --surface: #ffffff;
+    --surface2: #f5f7ff;
+    --surface3: #eef1fb;
+    --accent: #4f6ef7;
+    --accent-light: #e8ecff;
+    --accent2: #f7564f;
+    --accent2-light: #fff0ef;
+    --gold: #f0952a;
+    --gold-light: #fff5e6;
+    --green: #22c16b;
+    --green-light: #e6f9ef;
+    --red: #f7564f;
+    --red-light: #fff0ef;
+    --purple: #9b6ef7;
+    --purple-light: #f3eeff;
+    --text: #1a1d2e;
+    --text-muted: #7880a0;
+    --text-light: #a8afc8;
+    --border: rgba(79,110,247,0.12);
+    --border-soft: rgba(0,0,0,0.07);
+    --shadow: 0 2px 16px rgba(79,110,247,0.1);
+    --shadow-md: 0 4px 24px rgba(79,110,247,0.15);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 7px;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Nunito', 'Noto Sans KR', sans-serif;
+    font-family: 'Nunito','Noto Sans KR',sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
   }
-
-  /* ── Animated background ── */
   body::before {
-    content: '';
-    position: fixed; inset: 0;
+    content:''; position:fixed; inset:0;
     background:
-      radial-gradient(ellipse 60% 40% at 20% 20%, rgba(83,52,131,0.25) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 50% at 80% 80%, rgba(233,69,96,0.15) 0%, transparent 60%);
-    pointer-events: none; z-index: 0;
+      radial-gradient(ellipse 70% 50% at 10% 0%, rgba(79,110,247,.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 60% at 90% 100%, rgba(155,110,247,.07) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(247,86,79,.04) 0%, transparent 70%);
+    pointer-events:none; z-index:0;
   }
-
-  .page { position: relative; z-index: 1; }
+  .page { position:relative; z-index:1; }
 
   /* ── Screens ── */
-  .screen { display: none; max-width: 640px; margin: 0 auto; padding: 24px 16px 48px; animation: fadeUp 0.35s ease; }
-  .screen.active { display: block; }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .screen { display:none; max-width:620px; margin:0 auto; padding:20px 16px 64px; animation:fadeUp .3s ease; }
+  .screen.active { display:block; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
 
-  /* ── Header ── */
-  .game-logo {
-    text-align: center; margin-bottom: 32px; padding-top: 16px;
+  /* ── Logo ── */
+  .game-logo { text-align:center; margin-bottom:24px; padding-top:20px; }
+  .logo-badge {
+    display:inline-flex; align-items:center; gap:10px;
+    background:var(--surface); border:1.5px solid var(--border);
+    border-radius:40px; padding:10px 24px;
+    box-shadow:var(--shadow);
   }
-  .game-logo h1 {
-    font-size: 32px; font-weight: 900; letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #e94560, #f5a623);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
-  .game-logo p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+  .logo-icon { font-size:22px; }
+  .logo-text { font-size:22px; font-weight:900; letter-spacing:-.5px; color:var(--accent); }
+  .logo-sub { font-size:13px; color:var(--text-muted); margin-top:8px; }
 
-  /* ── Setup Panel ── */
+  /* ── Panel ── */
   .panel {
-    background: var(--surface);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 16px;
+    background:var(--surface); border:1.5px solid var(--border);
+    border-radius:var(--radius); padding:20px;
+    margin-bottom:14px; box-shadow:var(--shadow);
   }
   .panel-title {
-    font-size: 13px; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--accent);
-    margin-bottom: 16px;
+    font-size:11px; font-weight:800; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--accent);
+    margin-bottom:14px; display:flex; align-items:center; gap:6px;
   }
+  .panel-title::before { content:''; width:3px; height:14px; background:var(--accent); border-radius:2px; display:inline-block; }
 
-  /* Count selector */
-  .count-selector {
-    display: flex; gap: 8px; flex-wrap: wrap;
+  /* ── Counter ── */
+  .counter-wrap { display:flex; align-items:center; gap:16px; }
+  .counter-row { display:flex; align-items:center; background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; }
+  .counter-btn {
+    width:48px; height:48px;
+    border:none; background:transparent;
+    color:var(--accent); font-size:26px; font-weight:700;
+    cursor:pointer; transition:all .15s; font-family:'Nunito',sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    line-height:1;
   }
-  .count-btn {
-    width: 44px; height: 44px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--card-border);
-    background: var(--surface2);
-    color: var(--text-muted);
-    font-size: 14px; font-weight: 700;
-    cursor: pointer; transition: all 0.15s;
-    font-family: 'Nunito', sans-serif;
+  .counter-btn:hover { background:var(--accent-light); }
+  .counter-btn:active { transform:scale(.88); }
+  .counter-display {
+    min-width:60px; text-align:center;
+    font-size:30px; font-weight:900; color:var(--text);
+    border-left:1.5px solid var(--border); border-right:1.5px solid var(--border);
+    padding:0 8px; line-height:48px;
   }
-  .count-btn:hover { border-color: var(--accent); color: var(--text); }
-  .count-btn.active {
-    background: var(--accent); border-color: var(--accent);
-    color: #fff; box-shadow: 0 0 16px rgba(233,69,96,0.4);
-  }
+  .counter-meta { font-size:12px; color:var(--text-muted); line-height:1.6; }
 
-  /* Timer hint */
+  /* ── Timer hint ── */
   .timer-hint {
-    display: flex; align-items: center; gap: 8px;
-    background: rgba(245,166,35,0.1);
-    border: 1px solid rgba(245,166,35,0.25);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    font-size: 13px; color: var(--gold);
-    margin-top: 14px;
+    display:flex; align-items:center; gap:8px;
+    background:var(--gold-light); border:1.5px solid rgba(240,149,42,.25);
+    border-radius:var(--radius-xs); padding:9px 13px;
+    font-size:13px; color:#b36c10; margin-top:12px; font-weight:600;
   }
-  .timer-hint span { font-size: 16px; }
 
-  /* Word inputs */
-  .word-list { display: flex; flex-direction: column; gap: 8px; }
-  .word-row {
-    display: flex; align-items: center; gap: 8px;
-  }
+  /* ── Word inputs ── */
+  .word-list { display:flex; flex-direction:column; gap:6px; }
+  .word-row { display:flex; align-items:center; gap:7px; }
   .word-num {
-    font-size: 12px; color: var(--text-muted); font-weight: 700;
-    min-width: 20px; text-align: right;
+    font-size:12px; color:var(--text-light); font-weight:800;
+    min-width:20px; text-align:right; flex-shrink:0;
   }
   .word-row input {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-    color: var(--text); font-size: 14px;
-    font-family: 'Nunito', 'Noto Sans KR', sans-serif;
-    transition: border-color 0.15s;
-    outline: none;
+    flex:1; background:var(--surface2);
+    border:1.5px solid var(--border-soft);
+    border-radius:var(--radius-xs); padding:9px 11px;
+    color:var(--text); font-size:14px; font-weight:600;
+    font-family:'Nunito','Noto Sans KR',sans-serif;
+    transition:border-color .15s, box-shadow .15s; outline:none;
   }
-  .word-row input:focus { border-color: var(--accent3); }
-  .word-row input::placeholder { color: #555; }
-  .word-sep { color: var(--text-muted); font-size: 16px; }
+  .word-row input:focus {
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(79,110,247,.12);
+    background:#fff;
+  }
+  .word-row input::placeholder { color:var(--text-light); font-weight:400; }
+  .word-sep { color:var(--text-light); font-size:16px; flex-shrink:0; font-weight:700; }
 
-  /* Buttons */
+  /* ── Buttons ── */
   .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 12px 24px; border-radius: var(--radius-sm);
-    font-size: 15px; font-weight: 700; cursor: pointer;
-    font-family: 'Nunito', sans-serif; transition: all 0.15s;
-    border: none;
+    display:inline-flex; align-items:center; justify-content:center; gap:7px;
+    padding:13px 22px; border-radius:var(--radius-sm);
+    font-size:15px; font-weight:800; cursor:pointer;
+    font-family:'Nunito',sans-serif; transition:all .15s; border:none;
+    letter-spacing:-.2px;
   }
   .btn-primary {
-    background: linear-gradient(135deg, var(--accent), #c0392b);
-    color: #fff; box-shadow: 0 4px 20px rgba(233,69,96,0.35);
-    width: 100%;
+    background:var(--accent); color:#fff; width:100%;
+    box-shadow:0 4px 18px rgba(79,110,247,.35);
   }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(233,69,96,0.5); }
+  .btn-primary:hover { background:#3d5ce8; box-shadow:0 6px 24px rgba(79,110,247,.45); transform:translateY(-1px); }
   .btn-secondary {
-    background: var(--surface2);
-    border: 1px solid var(--card-border);
-    color: var(--text-muted); width: 100%;
+    background:var(--surface2); border:1.5px solid var(--border-soft);
+    color:var(--text-muted); width:100%; font-weight:700;
   }
-  .btn-secondary:hover { border-color: var(--text-muted); color: var(--text); }
-  .btn:active { transform: scale(0.97) !important; }
-  .btn-row { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .btn-secondary:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
+  .btn-qr {
+    background:var(--purple); color:#fff; width:100%;
+    box-shadow:0 4px 18px rgba(155,110,247,.35);
+  }
+  .btn-qr:hover { background:#8a5aef; transform:translateY(-1px); }
+  .btn:active { transform:scale(.97) !important; }
+  .btn-row { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+  .err-msg { font-size:13px; color:var(--red); margin-top:8px; min-height:18px; font-weight:600; }
 
-  .err-msg { font-size: 13px; color: var(--red); margin-top: 8px; min-height: 18px; }
+  /* ── QR Modal ── */
+  .modal-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(26,29,46,.45); backdrop-filter:blur(4px);
+    z-index:200; align-items:center; justify-content:center;
+  }
+  .modal-overlay.show { display:flex; }
+  .modal-box {
+    background:#fff; border:1.5px solid var(--border);
+    border-radius:20px; padding:28px 24px; text-align:center;
+    max-width:380px; width:92%; max-height:92vh; overflow-y:auto;
+    box-shadow:0 20px 60px rgba(79,110,247,.18);
+    animation:popUp .25s ease;
+  }
+  @keyframes popUp { from{transform:scale(.92);opacity:0} to{transform:scale(1);opacity:1} }
+  .modal-box h2 { font-size:20px; font-weight:900; margin-bottom:6px; color:var(--text); }
+  .modal-box .modal-desc { font-size:13px; color:var(--text-muted); margin-bottom:18px; line-height:1.6; }
+  #qr-container { background:#fff; border-radius:12px; padding:12px; display:inline-block; margin-bottom:14px; border:1.5px solid var(--border); }
+  #qr-container canvas, #qr-container img { display:block; }
+  .qr-url-box {
+    background:var(--surface2); border:1.5px solid var(--border-soft);
+    border-radius:var(--radius-xs); padding:9px 12px;
+    font-size:11px; color:var(--text-muted); word-break:break-all;
+    text-align:left; margin-bottom:12px; line-height:1.5; max-height:56px; overflow-y:auto;
+  }
+  .modal-word-list {
+    text-align:left; margin-bottom:14px;
+    background:var(--surface2); border:1.5px solid var(--border-soft);
+    border-radius:var(--radius-xs); padding:12px 14px;
+    max-height:180px; overflow-y:auto;
+  }
+  .modal-word-list .mwl-title { font-size:12px; color:var(--accent); margin-bottom:8px; font-weight:800; }
+  .modal-word-item { font-size:13px; color:var(--text); padding:3px 0; border-bottom:1px solid var(--border-soft); font-weight:600; }
+  .modal-word-item:last-child { border-bottom:none; }
+  .host-guide {
+    background:var(--gold-light); border:1.5px solid rgba(240,149,42,.25);
+    border-radius:var(--radius-xs); padding:14px 16px; text-align:left;
+    font-size:12px; color:#7a4f0a; line-height:1.85; margin-bottom:14px; font-weight:600;
+  }
+  .host-guide strong { display:block; font-size:13px; margin-bottom:6px; color:#b36c10; }
+  .host-guide a { color:var(--accent); }
+  .host-guide code { color:var(--accent2); background:var(--accent2-light); padding:1px 5px; border-radius:4px; }
+  .copy-btn {
+    background:var(--surface2); border:1.5px solid var(--border-soft);
+    color:var(--text-muted); padding:9px 16px; border-radius:var(--radius-xs);
+    font-size:13px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:700;
+    transition:all .15s; margin-bottom:10px; width:100%;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
+  .copy-btn.copied { border-color:var(--green); color:var(--green); background:var(--green-light); }
 
   /* ── Game Screen ── */
-  .game-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  .game-title { font-size: 18px; font-weight: 800; }
+  .game-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .game-title { font-size:18px; font-weight:900; color:var(--text); }
+  .game-progress-sub { font-size:12px; color:var(--text-muted); margin-top:2px; font-weight:600; }
 
   /* Timer ring */
-  .timer-ring-wrap { position: relative; width: 64px; height: 64px; }
-  .timer-ring-wrap svg { transform: rotate(-90deg); }
-  .timer-track { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 4; }
-  .timer-arc { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 0.5s linear, stroke 0.3s; }
-  .timer-label {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-size: 17px; font-weight: 900; line-height: 1;
-  }
-  .timer-label small { font-size: 9px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.05em; }
+  .timer-ring-wrap { position:relative; width:64px; height:64px; flex-shrink:0; }
+  .timer-ring-wrap svg { transform:rotate(-90deg); }
+  .timer-track { fill:none; stroke:var(--surface3); stroke-width:5; }
+  .timer-arc { fill:none; stroke:var(--green); stroke-width:5; stroke-linecap:round; transition:stroke-dashoffset .9s linear, stroke .3s; }
+  .timer-label { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:17px; font-weight:900; line-height:1; }
+  .timer-label small { font-size:9px; color:var(--text-muted); font-weight:700; letter-spacing:.05em; }
 
-  /* Progress */
-  .progress-bar {
-    height: 6px; background: rgba(255,255,255,0.07);
-    border-radius: 3px; overflow: hidden; margin-bottom: 20px;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent3), var(--accent));
-    border-radius: 3px; transition: width 0.4s ease;
-  }
+  /* Progress bar */
+  .progress-bar { height:7px; background:var(--surface3); border-radius:4px; overflow:hidden; margin-bottom:16px; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--purple)); border-radius:4px; transition:width .4s ease; }
 
-  /* Combo badge */
-  .combo-badge {
-    text-align: center; height: 28px; margin-bottom: 8px;
-    font-size: 14px; font-weight: 800; color: var(--gold);
-    opacity: 0; transition: opacity 0.2s;
-  }
-  .combo-badge.show { opacity: 1; animation: popIn 0.25s ease; }
-  @keyframes popIn { 0%{transform:scale(0.6)} 60%{transform:scale(1.15)} 100%{transform:scale(1)} }
+  /* Combo */
+  .combo-badge { text-align:center; height:26px; margin-bottom:6px; font-size:14px; font-weight:800; color:var(--gold); opacity:0; }
+  .combo-badge.show { opacity:1; animation:popIn .25s ease; }
+  @keyframes popIn { 0%{transform:scale(.6)} 60%{transform:scale(1.15)} 100%{transform:scale(1)} }
 
-  /* Match grid */
-  .match-cols {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-  }
+  /* Match columns */
+  .match-cols { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .col-header {
-    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--text-muted);
-    text-align: center; margin-bottom: 8px;
+    font-size:11px; font-weight:800; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--text-muted);
+    text-align:center; margin-bottom:8px;
+    background:var(--surface3); border-radius:var(--radius-xs);
+    padding:5px 0;
   }
-  .card-list { display: flex; flex-direction: column; gap: 7px; }
-
+  .card-list { display:flex; flex-direction:column; gap:7px; }
   .card {
-    background: var(--surface);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-sm);
-    padding: 11px 14px;
-    font-size: 14px; font-weight: 600;
-    text-align: center; cursor: pointer;
-    transition: all 0.15s; user-select: none;
-    min-height: 44px; display: flex; align-items: center; justify-content: center;
+    background:#fff; border:2px solid var(--border-soft);
+    border-radius:var(--radius-sm); padding:10px 10px;
+    font-size:13px; font-weight:700; text-align:center; cursor:pointer;
+    transition:all .15s; user-select:none;
+    min-height:44px; display:flex; align-items:center; justify-content:center;
+    line-height:1.3; color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,.05);
   }
   .card:hover:not(.matched):not(.wrong) {
-    border-color: rgba(255,255,255,0.25); background: var(--surface2);
-    transform: translateY(-1px);
+    border-color:var(--accent); background:var(--accent-light);
+    color:var(--accent); transform:translateY(-1px);
+    box-shadow:0 3px 12px rgba(79,110,247,.15);
   }
   .card.selected {
-    border-color: #a78bfa;
-    background: rgba(167,139,250,0.15);
-    color: #c4b5fd;
-    box-shadow: 0 0 14px rgba(167,139,250,0.25);
+    border-color:var(--accent); background:var(--accent-light);
+    color:var(--accent); box-shadow:0 0 0 3px rgba(79,110,247,.18);
   }
-  .card.correct, .card.matched {
-    border-color: var(--green);
-    background: rgba(46,204,113,0.12);
-    color: #6eecb0; cursor: default;
-    pointer-events: none;
+  .card.matched {
+    border-color:var(--green); background:var(--green-light);
+    color:#158a4a; cursor:default; pointer-events:none;
+    box-shadow:none;
   }
   .card.wrong {
-    border-color: var(--red);
-    background: rgba(231,76,60,0.15);
-    color: #f1948a;
-    animation: shake 0.35s ease;
+    border-color:var(--red); background:var(--red-light);
+    color:#c0392b; animation:shake .35s ease;
   }
-  @keyframes shake {
-    0%,100%{transform:translateX(0)}
-    20%{transform:translateX(-7px)}
-    40%{transform:translateX(7px)}
-    60%{transform:translateX(-5px)}
-    80%{transform:translateX(5px)}
-  }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
 
   /* Timeout overlay */
-  .timeout-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.75); z-index: 100;
-    align-items: center; justify-content: center;
-    animation: fadeIn 0.2s ease;
-  }
-  .timeout-overlay.show { display: flex; }
-  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .timeout-overlay { display:none; position:fixed; inset:0; background:rgba(26,29,46,.4); backdrop-filter:blur(4px); z-index:100; align-items:center; justify-content:center; }
+  .timeout-overlay.show { display:flex; }
   .timeout-box {
-    background: var(--surface); border: 1px solid var(--card-border);
-    border-radius: 20px; padding: 36px 32px; text-align: center;
-    max-width: 320px; width: 90%;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    background:#fff; border:1.5px solid var(--border);
+    border-radius:20px; padding:32px 28px; text-align:center;
+    max-width:300px; width:90%;
+    box-shadow:0 20px 60px rgba(79,110,247,.2);
+    animation:popUp .25s ease;
   }
-  .timeout-icon { font-size: 48px; margin-bottom: 12px; }
-  .timeout-box h2 { font-size: 24px; font-weight: 900; color: var(--red); margin-bottom: 8px; }
-  .timeout-box p { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+  .timeout-box h2 { font-size:22px; font-weight:900; color:var(--red); margin-bottom:8px; }
+  .timeout-box p { font-size:13px; color:var(--text-muted); margin-bottom:20px; line-height:1.6; white-space:pre-line; font-weight:600; }
 
-  /* ── Result Screen ── */
-  .result-hero { text-align: center; padding: 24px 0 8px; }
-  .result-grade {
-    font-size: 64px; font-weight: 900; line-height: 1;
-    background: linear-gradient(135deg, var(--gold), var(--accent));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  /* ── Result ── */
+  .result-hero { text-align:center; padding:20px 0 8px; }
+  .result-grade-wrap {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:90px; height:90px; border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--purple));
+    margin-bottom:12px;
+    box-shadow:0 8px 28px rgba(79,110,247,.3);
   }
-  .result-label { font-size: 16px; color: var(--text-muted); margin-top: 6px; margin-bottom: 4px; }
-  .result-score-num { font-size: 48px; font-weight: 900; color: var(--text); }
+  .result-grade { font-size:48px; font-weight:900; color:#fff; line-height:1; }
+  .result-label { font-size:15px; color:var(--text-muted); margin-bottom:4px; font-weight:600; }
+  .result-score-num { font-size:44px; font-weight:900; color:var(--text); }
 
-  .stats-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 20px 0;
-  }
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:18px 0; }
   .stat-card {
-    background: var(--surface); border: 1px solid var(--card-border);
-    border-radius: var(--radius-sm); padding: 12px 8px; text-align: center;
+    background:#fff; border:1.5px solid var(--border-soft);
+    border-radius:var(--radius-sm); padding:12px 6px; text-align:center;
+    box-shadow:0 1px 6px rgba(0,0,0,.05);
   }
-  .stat-val { font-size: 20px; font-weight: 800; color: var(--text); }
-  .stat-lbl { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .stat-val { font-size:18px; font-weight:900; color:var(--text); }
+  .stat-lbl { font-size:10px; color:var(--text-muted); margin-top:3px; font-weight:700; }
 
   .log-panel {
-    background: var(--surface); border: 1px solid var(--card-border);
-    border-radius: var(--radius); padding: 16px 20px; margin: 16px 0;
+    background:#fff; border:1.5px solid var(--border-soft);
+    border-radius:var(--radius); padding:16px 18px; margin:14px 0;
+    box-shadow:0 1px 6px rgba(0,0,0,.05);
   }
-  .log-title { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
-  .log-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 13px;
-  }
-  .log-row:last-child { border-bottom: none; }
-  .log-pair { color: var(--text); }
-  .log-ok { color: var(--green); font-size: 16px; }
-  .log-fail { color: var(--red); font-size: 16px; }
+  .log-title { font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; }
+  .log-row { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f0f0f0; font-size:13px; font-weight:600; }
+  .log-row:last-child { border-bottom:none; }
+  .log-ok { color:var(--green); font-size:15px; font-weight:900; }
+  .log-fail { color:var(--red); font-size:15px; font-weight:900; }
 
-  /* Score bar animation */
-  @keyframes scoreUp { from { width: 0; } }
+  /* Game bottom buttons */
+  .game-btns { display:flex; gap:10px; margin-top:16px; }
+  .game-btns .btn { flex:1; }
 </style>
 </head>
 <body>
 <div class="page">
 
-  <!-- ══ SETUP SCREEN ══ -->
-  <div id="setup-screen" class="screen active">
-    <div class="game-logo">
-      <h1>WORD MATCH</h1>
-      <p>영어 단어 매칭 게임</p>
+<!-- ══ SETUP ══ -->
+<div id="setup-screen" class="screen active">
+  <div class="game-logo">
+    <div class="logo-badge">
+      <span class="logo-icon">🔤</span>
+      <span class="logo-text">WORD MATCH</span>
     </div>
+    <div class="logo-sub">영어 단어 매칭 게임</div>
+  </div>
 
-    <div class="panel">
-      <div class="panel-title">단어 갯수 선택</div>
-      <div class="count-selector" id="count-selector"></div>
-      <div class="timer-hint">
-        <span>⏱</span>
-        <span id="timer-hint-text">제한 시간: — 초 (단어수 × 3초 + 알파 5초)</span>
+  <div class="panel">
+    <div class="panel-title">단어 갯수</div>
+    <div class="counter-wrap">
+      <div class="counter-row">
+        <button class="counter-btn" onclick="changeCount(-1)">−</button>
+        <div class="counter-display" id="count-display">5</div>
+        <button class="counter-btn" onclick="changeCount(+1)">+</button>
       </div>
+      <div class="counter-meta">개 &nbsp;·&nbsp; 최소 1 · 최대 20</div>
     </div>
-
-    <div class="panel">
-      <div class="panel-title">단어 입력</div>
-      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">왼쪽: 한국어 뜻 &nbsp;│&nbsp; 오른쪽: 영어 단어</p>
-      <div class="word-list" id="word-inputs"></div>
-      <div class="err-msg" id="err-msg"></div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="startGame()">🎮 게임 시작</button>
-      <button class="btn btn-secondary" onclick="loadSample()">📋 예시 단어 불러오기</button>
+    <div class="timer-hint">
+      ⏱&nbsp;<span id="timer-hint-text">제한 시간: 20초 (5개 × 3초 + 알파 5초)</span>
     </div>
   </div>
 
-  <!-- ══ GAME SCREEN ══ -->
-  <div id="game-screen" class="screen">
-    <div class="game-header">
-      <div>
-        <div class="game-title">WORD MATCH</div>
-        <div id="game-progress-text" style="font-size:13px;color:var(--text-muted);margin-top:2px;"></div>
-      </div>
-      <div class="timer-ring-wrap">
-        <svg width="64" height="64" viewBox="0 0 64 64">
-          <circle class="timer-track" cx="32" cy="32" r="28"/>
-          <circle class="timer-arc" id="timer-arc" cx="32" cy="32" r="28"
-            stroke-dasharray="175.93" stroke-dashoffset="0"/>
-        </svg>
-        <div class="timer-label">
-          <span id="timer-num">0</span>
-          <small>SEC</small>
-        </div>
-      </div>
-    </div>
-
-    <div class="progress-bar">
-      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-    </div>
-
-    <div class="combo-badge" id="combo-badge">🔥 연속 정답!</div>
-
-    <div class="match-cols">
-      <div>
-        <div class="col-header">🇰🇷 한국어</div>
-        <div class="card-list" id="col-korean"></div>
-      </div>
-      <div>
-        <div class="col-header">🇺🇸 English</div>
-        <div class="card-list" id="col-english"></div>
-      </div>
-    </div>
-
-    <div style="margin-top:20px;display:flex;gap:10px;">
-      <button class="btn btn-secondary" style="flex:1" onclick="backToSetup()">← 처음으로</button>
-      <button class="btn btn-secondary" style="flex:1" onclick="restartGame()">↺ 다시 시작</button>
-    </div>
+  <div class="panel">
+    <div class="panel-title">단어 입력</div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;font-weight:600;">왼쪽: 한국어 뜻 &nbsp;│&nbsp; 오른쪽: 영어 단어</p>
+    <div class="word-list" id="word-inputs"></div>
+    <div class="err-msg" id="err-msg"></div>
   </div>
 
-  <!-- ══ RESULT SCREEN ══ -->
-  <div id="result-screen" class="screen">
-    <div class="result-hero">
-      <div class="result-grade" id="result-grade">S</div>
-      <div class="result-label" id="result-label">완벽해요!</div>
-      <div class="result-score-num" id="result-score">100점</div>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-val" id="r-time">0s</div>
-        <div class="stat-lbl">소요 시간</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" id="r-tries">0</div>
-        <div class="stat-lbl">총 시도</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" id="r-wrong">0</div>
-        <div class="stat-lbl">틀린 횟수</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" id="r-acc">0%</div>
-        <div class="stat-lbl">정확도</div>
-      </div>
-    </div>
-
-    <div class="log-panel">
-      <div class="log-title">매칭 기록</div>
-      <div id="log-list"></div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="restartGame()">↺ 다시 도전</button>
-      <button class="btn btn-secondary" onclick="backToSetup()">✏️ 단어 변경</button>
-    </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startGame()">🎮 게임 시작</button>
+    <button class="btn btn-qr" onclick="openQR()">📲 QR 코드로 학생에게 공유</button>
+    <button class="btn btn-secondary" onclick="loadSample()">📋 예시 단어 불러오기</button>
   </div>
-
 </div>
 
-<!-- TIMEOUT OVERLAY -->
+<!-- ══ GAME ══ -->
+<div id="game-screen" class="screen">
+  <div class="game-header">
+    <div>
+      <div class="game-title">🔤 WORD MATCH</div>
+      <div class="game-progress-sub" id="game-progress-text">0 / 0 완료</div>
+    </div>
+    <div class="timer-ring-wrap">
+      <svg width="64" height="64" viewBox="0 0 64 64">
+        <circle class="timer-track" cx="32" cy="32" r="27"/>
+        <circle class="timer-arc" id="timer-arc" cx="32" cy="32" r="27"
+          stroke-dasharray="169.65" stroke-dashoffset="0"/>
+      </svg>
+      <div class="timer-label">
+        <span id="timer-num">0</span>
+        <small>SEC</small>
+      </div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="combo-badge" id="combo-badge"></div>
+  <div class="match-cols">
+    <div>
+      <div class="col-header">🇰🇷 한국어</div>
+      <div class="card-list" id="col-korean"></div>
+    </div>
+    <div>
+      <div class="col-header">🇺🇸 English</div>
+      <div class="card-list" id="col-english"></div>
+    </div>
+  </div>
+  <div class="game-btns">
+    <button class="btn btn-secondary" onclick="backToSetup()">← 처음으로</button>
+    <button class="btn btn-secondary" onclick="restartGame()">↺ 다시 시작</button>
+  </div>
+</div>
+
+<!-- ══ RESULT ══ -->
+<div id="result-screen" class="screen">
+  <div class="result-hero">
+    <div class="result-grade-wrap">
+      <div class="result-grade" id="result-grade">S</div>
+    </div>
+    <div class="result-label" id="result-label">완벽해요!</div>
+    <div class="result-score-num" id="result-score">100점</div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-val" id="r-time">0s</div><div class="stat-lbl">소요 시간</div></div>
+    <div class="stat-card"><div class="stat-val" id="r-tries">0</div><div class="stat-lbl">총 시도</div></div>
+    <div class="stat-card"><div class="stat-val" id="r-wrong">0</div><div class="stat-lbl">틀린 횟수</div></div>
+    <div class="stat-card"><div class="stat-val" id="r-acc">0%</div><div class="stat-lbl">정확도</div></div>
+  </div>
+  <div class="log-panel">
+    <div class="log-title">매칭 기록</div>
+    <div id="log-list"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="restartGame()">↺ 다시 도전</button>
+    <button class="btn btn-secondary" onclick="backToSetup()">✏️ 단어 변경</button>
+  </div>
+</div>
+
+<!-- ══ TIMEOUT ══ -->
 <div class="timeout-overlay" id="timeout-overlay">
   <div class="timeout-box">
-    <div class="timeout-icon">⏰</div>
+    <div style="font-size:48px;margin-bottom:10px;">⏰</div>
     <h2>시간 초과!</h2>
-    <p id="timeout-msg">아쉽게도 시간이 다 됐어요.<br>다시 도전해보세요!</p>
+    <p id="timeout-msg"></p>
     <div style="display:flex;flex-direction:column;gap:10px;">
       <button class="btn btn-primary" onclick="closeTimeoutRestart()">↺ 다시 도전</button>
       <button class="btn btn-secondary" onclick="closeTimeoutSetup()">✏️ 단어 변경</button>
@@ -433,8 +441,42 @@
   </div>
 </div>
 
+<!-- ══ QR MODAL ══ -->
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal-box">
+    <h2>📲 학생에게 공유하기</h2>
+    <p class="modal-desc">QR을 스캔하면 같은 단어로<br>게임이 바로 시작돼요!</p>
+
+    <div id="qr-not-hosted" style="display:none;">
+      <div class="host-guide">
+        <strong>⚠️ 웹에 올려야 QR 공유가 가능해요</strong>
+        GitHub Pages로 무료 호스팅하는 방법:<br>
+        1️⃣ <a href="https://github.com" target="_blank">github.com</a> 무료 계정 만들기<br>
+        2️⃣ 새 저장소(Repository) 생성 → <code>public</code><br>
+        3️⃣ 이 파일을 <code>index.html</code> 이름으로 업로드<br>
+        4️⃣ Settings → Pages → Branch: main → Save<br>
+        5️⃣ <code>https://[아이디].github.io/[저장소]/</code> 완성!<br><br>
+        그 주소로 접속하면 QR이 자동 생성돼요 ✅
+      </div>
+      <button class="btn btn-secondary" onclick="closeQR()">닫기</button>
+    </div>
+
+    <div id="qr-hosted" style="display:none;">
+      <div id="qr-container"></div>
+      <div class="qr-url-box" id="qr-url-text"></div>
+      <div class="modal-word-list" id="modal-word-list">
+        <div class="mwl-title">📚 포함된 단어</div>
+      </div>
+      <button class="copy-btn" id="copy-btn" onclick="copyURL()">🔗 링크 복사하기</button>
+      <button class="btn btn-primary" onclick="closeQR()">확인</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
 <script>
-const SAMPLE = [
+const SAMPLE=[
   {kr:'사과',en:'apple'},{kr:'바나나',en:'banana'},{kr:'고양이',en:'cat'},
   {kr:'강아지',en:'dog'},{kr:'책',en:'book'},{kr:'학교',en:'school'},
   {kr:'자동차',en:'car'},{kr:'하늘',en:'sky'},{kr:'바다',en:'sea'},
@@ -443,302 +485,220 @@ const SAMPLE = [
   {kr:'친구',en:'friend'},{kr:'시간',en:'time'},{kr:'사랑',en:'love'},
   {kr:'행복',en:'happy'},{kr:'음악',en:'music'}
 ];
+const CIRC=2*Math.PI*27;
 
-let selectedCount = 5;
-let words = [];
-let selKor = null, selEng = null;
-let matched = 0, tries = 0, wrongs = 0, combo = 0;
-let timerInterval = null, timeLeft = 0, totalTime = 0;
-let startTs, elapsedSec = 0;
-let attempts = [];
-let inputCount = 5;
+let selectedCount=5, inputCount=5;
+let words=[];
+let selKor=null, selEng=null;
+let matched=0, tries=0, wrongs=0, combo=0;
+let timerInterval=null, timeLeft=0, totalTime=0, elapsedSec=0;
+let startTs, attempts=[];
 
-/* ─ Build count selector ─ */
-const counts = [1,2,3,4,5,6,7,8,9,10,12,15,20];
-const cs = document.getElementById('count-selector');
-counts.forEach(n => {
-  const b = document.createElement('button');
-  b.className = 'count-btn' + (n === selectedCount ? ' active' : '');
-  b.textContent = n;
-  b.onclick = () => {
-    document.querySelectorAll('.count-btn').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    selectedCount = n;
-    buildInputs(n);
-    updateTimerHint(n);
-  };
-  cs.appendChild(b);
-});
-
-function calcTime(n) { return n * 3 + 5; }
-
-function updateTimerHint(n) {
-  const t = calcTime(n);
-  document.getElementById('timer-hint-text').textContent =
-    `제한 시간: ${t}초  (${n}개 × 3초 + 알파 5초)`;
+function changeCount(delta){
+  const next=Math.min(20,Math.max(1,selectedCount+delta));
+  if(next===selectedCount) return;
+  selectedCount=next;
+  document.getElementById('count-display').textContent=next;
+  updateTimerHint(next);
+  buildInputs(next);
+}
+function calcTime(n){ return n*3+5; }
+function updateTimerHint(n){
+  document.getElementById('timer-hint-text').textContent=
+    `제한 시간: ${calcTime(n)}초  (${n}개 × 3초 + 알파 5초)`;
 }
 
-function buildInputs(n) {
-  inputCount = n;
-  const container = document.getElementById('word-inputs');
-  container.innerHTML = '';
-  for (let i = 0; i < n; i++) {
-    const row = document.createElement('div');
-    row.className = 'word-row';
-    row.innerHTML = `<span class="word-num">${i+1}</span>
+function buildInputs(n){
+  const prev=[];
+  for(let i=0;i<inputCount;i++){
+    const kr=document.getElementById('kr-'+i), en=document.getElementById('en-'+i);
+    if(kr&&en) prev.push({kr:kr.value,en:en.value});
+  }
+  inputCount=n;
+  const c=document.getElementById('word-inputs');
+  c.innerHTML='';
+  for(let i=0;i<n;i++){
+    const row=document.createElement('div');
+    row.className='word-row';
+    row.innerHTML=`<span class="word-num">${i+1}</span>
       <input type="text" id="kr-${i}" placeholder="한국어 뜻" autocomplete="off"/>
       <span class="word-sep">—</span>
       <input type="text" id="en-${i}" placeholder="English" autocomplete="off"/>`;
-    container.appendChild(row);
+    c.appendChild(row);
+    if(prev[i]){ document.getElementById('kr-'+i).value=prev[i].kr; document.getElementById('en-'+i).value=prev[i].en; }
   }
 }
 
-function loadSample() {
-  const n = inputCount;
-  for (let i = 0; i < n; i++) {
-    const kr = document.getElementById('kr-'+i);
-    const en = document.getElementById('en-'+i);
-    if (kr && en && SAMPLE[i]) { kr.value = SAMPLE[i].kr; en.value = SAMPLE[i].en; }
+function loadSample(){
+  for(let i=0;i<inputCount;i++){
+    const kr=document.getElementById('kr-'+i), en=document.getElementById('en-'+i);
+    if(kr&&en&&SAMPLE[i]){kr.value=SAMPLE[i].kr; en.value=SAMPLE[i].en;}
   }
-  document.getElementById('err-msg').textContent = '';
+  document.getElementById('err-msg').textContent='';
 }
 
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i+1));
-    [a[i], a[j]] = [a[j], a[i]];
+function collectWords(){
+  const arr=[];
+  for(let i=0;i<inputCount;i++){
+    const kr=(document.getElementById('kr-'+i)||{}).value.trim();
+    const en=(document.getElementById('en-'+i)||{}).value.trim();
+    if(!kr||!en){ document.getElementById('err-msg').textContent=`${i+1}번 단어를 모두 입력해주세요.`; return null; }
+    arr.push({kr,en});
   }
-  return a;
+  document.getElementById('err-msg').textContent='';
+  return arr;
 }
 
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-/* ─ Start game ─ */
-function startGame() {
-  const n = inputCount;
-  const collected = [];
-  document.getElementById('err-msg').textContent = '';
-  for (let i = 0; i < n; i++) {
-    const kr = (document.getElementById('kr-'+i)||{}).value.trim();
-    const en = (document.getElementById('en-'+i)||{}).value.trim();
-    if (!kr || !en) {
-      document.getElementById('err-msg').textContent = `${i+1}번 단어를 모두 입력해주세요.`;
-      return;
-    }
-    collected.push({kr, en});
+function openQR(){
+  const w=collectWords(); if(!w) return;
+  words=w;
+  const isHosted=location.protocol==='https:'||(location.protocol==='http:'&&!location.href.startsWith('file:'));
+  document.getElementById('qr-not-hosted').style.display=isHosted?'none':'block';
+  document.getElementById('qr-hosted').style.display=isHosted?'block':'none';
+  if(isHosted){
+    const encoded=encodeURIComponent(JSON.stringify(w.map(x=>({k:x.kr,e:x.en}))));
+    const url=location.origin+location.pathname+'?words='+encoded;
+    const qrDiv=document.getElementById('qr-container');
+    qrDiv.innerHTML='';
+    new QRCode(qrDiv,{text:url,width:196,height:196,correctLevel:QRCode.CorrectLevel.M});
+    document.getElementById('qr-url-text').textContent=url;
+    const ml=document.getElementById('modal-word-list');
+    ml.innerHTML='<div class="mwl-title">📚 포함된 단어</div>';
+    w.forEach((x,i)=>{
+      const d=document.createElement('div'); d.className='modal-word-item';
+      d.textContent=`${i+1}. ${x.kr} — ${x.en}`; ml.appendChild(d);
+    });
+    const copyBtn=document.getElementById('copy-btn');
+    copyBtn.textContent='🔗 링크 복사하기'; copyBtn.classList.remove('copied');
+    copyBtn._url=url;
   }
-  words = collected;
-  initGame();
+  document.getElementById('qr-modal').classList.add('show');
+}
+function closeQR(){ document.getElementById('qr-modal').classList.remove('show'); }
+function copyURL(){
+  const btn=document.getElementById('copy-btn');
+  navigator.clipboard.writeText(btn._url).then(()=>{
+    btn.textContent='✅ 복사됨!'; btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='🔗 링크 복사하기';btn.classList.remove('copied');},2000);
+  }).catch(()=>{ prompt('아래 링크를 복사하세요:',btn._url); });
 }
 
-function initGame() {
+function loadFromURL(){
+  try{
+    const params=new URLSearchParams(location.search);
+    const raw=params.get('words'); if(!raw) return false;
+    const arr=JSON.parse(decodeURIComponent(raw));
+    if(!Array.isArray(arr)||arr.length===0) return false;
+    const w=arr.map(x=>({kr:x.k,en:x.e})).filter(x=>x.kr&&x.en);
+    if(w.length===0) return false;
+    selectedCount=w.length; inputCount=w.length;
+    document.getElementById('count-display').textContent=w.length;
+    updateTimerHint(w.length);
+    buildInputs(w.length);
+    w.forEach((x,i)=>{ document.getElementById('kr-'+i).value=x.kr; document.getElementById('en-'+i).value=x.en; });
+    words=w; return true;
+  }catch(e){ return false; }
+}
+
+function startGame(){ const w=collectWords(); if(!w) return; words=w; initGame(); }
+function initGame(){
   clearInterval(timerInterval);
-  matched = 0; tries = 0; wrongs = 0; combo = 0; attempts = [];
-  selKor = null; selEng = null;
-  startTs = Date.now();
-
-  totalTime = calcTime(words.length);
-  timeLeft = totalTime;
-
-  document.getElementById('game-progress-text').textContent = `0 / ${words.length} 완료`;
-  document.getElementById('progress-fill').style.width = '0%';
+  matched=0; tries=0; wrongs=0; combo=0; attempts=[];
+  selKor=null; selEng=null;
+  startTs=Date.now(); totalTime=calcTime(words.length); timeLeft=totalTime;
+  document.getElementById('game-progress-text').textContent=`0 / ${words.length} 완료`;
+  document.getElementById('progress-fill').style.width='0%';
   document.getElementById('combo-badge').classList.remove('show');
-
   updateTimerUI();
-
-  const shuffKr = shuffle(words.map((w,i) => ({...w, idx:i})));
-  const shuffEn = shuffle(words.map((w,i) => ({...w, idx:i})));
-
-  const colKr = document.getElementById('col-korean');
-  const colEn = document.getElementById('col-english');
-  colKr.innerHTML = ''; colEn.innerHTML = '';
-
-  shuffKr.forEach(w => {
-    const el = makeCard(w.kr);
-    el.dataset.idx = w.idx;
-    el.onclick = () => selectKor(el, w.idx);
-    colKr.appendChild(el);
-  });
-  shuffEn.forEach(w => {
-    const el = makeCard(w.en);
-    el.dataset.idx = w.idx;
-    el.onclick = () => selectEng(el, w.idx);
-    colEn.appendChild(el);
-  });
-
-  showScreen('game-screen');
+  const shuffKr=shuffle(words.map((w,i)=>({...w,idx:i})));
+  const shuffEn=shuffle(words.map((w,i)=>({...w,idx:i})));
+  const colKr=document.getElementById('col-korean'), colEn=document.getElementById('col-english');
+  colKr.innerHTML=''; colEn.innerHTML='';
+  shuffKr.forEach(w=>{ const el=makeCard(w.kr); el.dataset.idx=w.idx; el.onclick=()=>selectKor(el,w.idx); colKr.appendChild(el); });
+  shuffEn.forEach(w=>{ const el=makeCard(w.en); el.dataset.idx=w.idx; el.onclick=()=>selectEng(el,w.idx); colEn.appendChild(el); });
   document.getElementById('timeout-overlay').classList.remove('show');
-
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    elapsedSec = Math.floor((Date.now() - startTs) / 1000);
+  showScreen('game-screen');
+  timerInterval=setInterval(()=>{
+    timeLeft--; elapsedSec=Math.floor((Date.now()-startTs)/1000);
     updateTimerUI();
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      showTimeout();
-    }
-  }, 1000);
+    if(timeLeft<=0){ clearInterval(timerInterval); showTimeout(); }
+  },1000);
 }
-
-function makeCard(text) {
-  const el = document.createElement('div');
-  el.className = 'card';
-  el.textContent = text;
-  return el;
+function makeCard(t){ const el=document.createElement('div'); el.className='card'; el.textContent=t; return el; }
+function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+function updateTimerUI(){
+  const arc=document.getElementById('timer-arc'), numEl=document.getElementById('timer-num');
+  const r=Math.max(0,timeLeft/totalTime);
+  arc.style.strokeDashoffset=CIRC*(1-r);
+  arc.style.stroke=r>.5?'#22c16b':r>.25?'#f0952a':'#f7564f';
+  numEl.textContent=timeLeft;
+  numEl.style.color=r<=.25?'#f7564f':'var(--text)';
 }
-
-/* ─ Timer UI ─ */
-const CIRCUMFERENCE = 2 * Math.PI * 28; // 175.93
-function updateTimerUI() {
-  const arc = document.getElementById('timer-arc');
-  const numEl = document.getElementById('timer-num');
-  const ratio = Math.max(0, timeLeft / totalTime);
-  arc.style.strokeDashoffset = CIRCUMFERENCE * (1 - ratio);
-
-  // Color shift: green → yellow → red
-  if (ratio > 0.5) arc.style.stroke = '#2ecc71';
-  else if (ratio > 0.25) arc.style.stroke = '#f5a623';
-  else arc.style.stroke = '#e74c3c';
-
-  numEl.textContent = timeLeft;
-  numEl.style.color = ratio <= 0.25 ? '#e74c3c' : 'var(--text)';
-}
-
-/* ─ Card selection ─ */
-function selectKor(el, idx) {
-  if (el.classList.contains('matched')) return;
-  if (selKor) selKor.el.classList.remove('selected');
-  selKor = {el, idx};
-  el.classList.add('selected');
-  tryMatch();
-}
-function selectEng(el, idx) {
-  if (el.classList.contains('matched')) return;
-  if (selEng) selEng.el.classList.remove('selected');
-  selEng = {el, idx};
-  el.classList.add('selected');
-  tryMatch();
-}
-
-function tryMatch() {
-  if (!selKor || !selEng) return;
-  const {el: kEl, idx: kIdx} = selKor;
-  const {el: eEl, idx: eIdx} = selEng;
+function selectKor(el,idx){ if(el.classList.contains('matched')) return; if(selKor) selKor.el.classList.remove('selected'); selKor={el,idx}; el.classList.add('selected'); tryMatch(); }
+function selectEng(el,idx){ if(el.classList.contains('matched')) return; if(selEng) selEng.el.classList.remove('selected'); selEng={el,idx}; el.classList.add('selected'); tryMatch(); }
+function tryMatch(){
+  if(!selKor||!selEng) return;
+  const {el:kEl,idx:kIdx}=selKor, {el:eEl,idx:eIdx}=selEng;
   tries++;
-
-  if (kIdx === eIdx) {
+  if(kIdx===eIdx){
     kEl.classList.remove('selected'); kEl.classList.add('matched');
     eEl.classList.remove('selected'); eEl.classList.add('matched');
-    matched++;
-    combo++;
-    attempts.push({kr: kEl.textContent, en: eEl.textContent, ok: true});
+    matched++; combo++;
+    attempts.push({kr:kEl.textContent,en:eEl.textContent,ok:true});
     showCombo(combo);
-
-    document.getElementById('game-progress-text').textContent = `${matched} / ${words.length} 완료`;
-    document.getElementById('progress-fill').style.width = (matched / words.length * 100) + '%';
-
-    selKor = null; selEng = null;
-    if (matched === words.length) {
-      clearInterval(timerInterval);
-      elapsedSec = Math.floor((Date.now() - startTs) / 1000);
-      setTimeout(showResult, 500);
-    }
+    document.getElementById('game-progress-text').textContent=`${matched} / ${words.length} 완료`;
+    document.getElementById('progress-fill').style.width=(matched/words.length*100)+'%';
+    selKor=null; selEng=null;
+    if(matched===words.length){ clearInterval(timerInterval); elapsedSec=Math.floor((Date.now()-startTs)/1000); setTimeout(showResult,500); }
   } else {
-    wrongs++;
-    combo = 0;
-    attempts.push({kr: kEl.textContent, en: eEl.textContent, ok: false});
+    wrongs++; combo=0;
+    attempts.push({kr:kEl.textContent,en:eEl.textContent,ok:false});
     kEl.classList.remove('selected'); kEl.classList.add('wrong');
     eEl.classList.remove('selected'); eEl.classList.add('wrong');
-    selKor = null; selEng = null;
-    setTimeout(() => {
-      kEl.classList.remove('wrong');
-      eEl.classList.remove('wrong');
-    }, 600);
+    selKor=null; selEng=null;
+    setTimeout(()=>{ kEl.classList.remove('wrong'); eEl.classList.remove('wrong'); },600);
   }
 }
-
-function showCombo(n) {
-  const el = document.getElementById('combo-badge');
-  if (n >= 2) {
-    el.textContent = n >= 5 ? `🔥🔥 ${n}연속 정답!!` : n >= 3 ? `🔥 ${n}연속 정답!` : `✨ 연속 정답!`;
-    el.classList.remove('show');
-    void el.offsetWidth;
-    el.classList.add('show');
-  } else {
-    el.classList.remove('show');
-  }
+function showCombo(n){
+  const el=document.getElementById('combo-badge');
+  if(n>=2){
+    el.textContent=n>=5?`🔥🔥 ${n}연속 정답!!`:n>=3?`🔥 ${n}연속 정답!`:'✨ 연속 정답!';
+    el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  } else { el.classList.remove('show'); }
 }
-
-/* ─ Timeout ─ */
-function showTimeout() {
-  const remaining = words.length - matched;
-  document.getElementById('timeout-msg').textContent =
-    `${matched}개 완료, ${remaining}개 남았어요.\n다시 도전해보세요!`;
+function showTimeout(){
+  document.getElementById('timeout-msg').textContent=`${matched}개 완료, ${words.length-matched}개 남았어요.\n다시 도전해보세요!`;
   document.getElementById('timeout-overlay').classList.add('show');
 }
-function closeTimeoutRestart() {
-  document.getElementById('timeout-overlay').classList.remove('show');
-  restartGame();
-}
-function closeTimeoutSetup() {
-  document.getElementById('timeout-overlay').classList.remove('show');
-  backToSetup();
-}
-
-/* ─ Result ─ */
-function showResult() {
-  const timeBonus = Math.max(0, timeLeft);
-  const accuracyScore = tries > 0 ? Math.round((matched / tries) * 100) : 100;
-  const score = Math.max(0, Math.round(
-    100 - (wrongs * 8) + Math.floor(timeBonus / 2)
-  ));
-  const cappedScore = Math.min(100, score);
-  const acc = tries > 0 ? Math.round(matched / tries * 100) : 100;
-
-  let grade, label;
-  if (cappedScore >= 95 && wrongs === 0) { grade = 'S'; label = '완벽해요! 단 하나도 안 틀렸어요!'; }
-  else if (cappedScore >= 85) { grade = 'A'; label = '훌륭해요! 거의 다 맞혔네요!'; }
-  else if (cappedScore >= 70) { grade = 'B'; label = '잘 했어요! 조금만 더 연습해봐요.'; }
-  else if (cappedScore >= 55) { grade = 'C'; label = '괜찮아요. 다시 도전해봐요!'; }
-  else { grade = 'D'; label = '다시 열심히 해봐요!'; }
-
-  document.getElementById('result-grade').textContent = grade;
-  document.getElementById('result-label').textContent = label;
-  document.getElementById('result-score').textContent = cappedScore + '점';
-  document.getElementById('r-time').textContent = elapsedSec + 's';
-  document.getElementById('r-tries').textContent = tries;
-  document.getElementById('r-wrong').textContent = wrongs;
-  document.getElementById('r-acc').textContent = acc + '%';
-
-  const logList = document.getElementById('log-list');
-  logList.innerHTML = '';
-  attempts.forEach(a => {
-    const row = document.createElement('div');
-    row.className = 'log-row';
-    row.innerHTML = `<span class="log-pair">${a.kr} — ${a.en}</span>
-      <span class="${a.ok ? 'log-ok' : 'log-fail'}">${a.ok ? '✓' : '✗'}</span>`;
-    logList.appendChild(row);
-  });
-
+function closeTimeoutRestart(){ document.getElementById('timeout-overlay').classList.remove('show'); restartGame(); }
+function closeTimeoutSetup(){ document.getElementById('timeout-overlay').classList.remove('show'); backToSetup(); }
+function showResult(){
+  const score=Math.min(100,Math.max(0,Math.round(100-(wrongs*8)+Math.floor(Math.max(0,timeLeft)/2))));
+  const acc=tries>0?Math.round(matched/tries*100):100;
+  let grade,label;
+  if(score>=95&&wrongs===0){grade='S';label='완벽해요! 하나도 안 틀렸어요!';}
+  else if(score>=85){grade='A';label='훌륭해요! 거의 다 맞혔네요!';}
+  else if(score>=70){grade='B';label='잘 했어요! 조금만 더 연습해봐요.';}
+  else if(score>=55){grade='C';label='괜찮아요. 다시 도전해봐요!';}
+  else{grade='D';label='다시 열심히 해봐요!';}
+  document.getElementById('result-grade').textContent=grade;
+  document.getElementById('result-label').textContent=label;
+  document.getElementById('result-score').textContent=score+'점';
+  document.getElementById('r-time').textContent=elapsedSec+'s';
+  document.getElementById('r-tries').textContent=tries;
+  document.getElementById('r-wrong').textContent=wrongs;
+  document.getElementById('r-acc').textContent=acc+'%';
+  const ll=document.getElementById('log-list'); ll.innerHTML='';
+  attempts.forEach(a=>{ const r=document.createElement('div'); r.className='log-row'; r.innerHTML=`<span>${a.kr} — ${a.en}</span><span class="${a.ok?'log-ok':'log-fail'}">${a.ok?'✓':'✗'}</span>`; ll.appendChild(r); });
   showScreen('result-screen');
 }
+function restartGame(){ if(words.length) initGame(); }
+function backToSetup(){ clearInterval(timerInterval); document.getElementById('timeout-overlay').classList.remove('show'); showScreen('setup-screen'); }
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-function restartGame() {
-  if (words.length) initGame();
-}
-function backToSetup() {
-  clearInterval(timerInterval);
-  document.getElementById('timeout-overlay').classList.remove('show');
-  showScreen('setup-screen');
-}
-
-/* ─ Init ─ */
 buildInputs(selectedCount);
 updateTimerHint(selectedCount);
+if(loadFromURL()) setTimeout(startGame, 400);
 </script>
 </body>
 </html>
