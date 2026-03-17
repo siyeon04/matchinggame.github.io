@@ -30,296 +30,189 @@
     --border: rgba(79,110,247,0.12);
     --border-soft: rgba(0,0,0,0.07);
     --shadow: 0 2px 16px rgba(79,110,247,0.1);
-    --shadow-md: 0 4px 24px rgba(79,110,247,0.15);
     --radius: 16px;
     --radius-sm: 10px;
     --radius-xs: 7px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--bg);
-    color: var(--text);
+    background: var(--bg); color: var(--text);
     font-family: 'Nunito','Noto Sans KR',sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
+    min-height: 100vh; overflow-x: hidden;
   }
   body::before {
     content:''; position:fixed; inset:0;
     background:
       radial-gradient(ellipse 70% 50% at 10% 0%, rgba(79,110,247,.08) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 60% at 90% 100%, rgba(155,110,247,.07) 0%, transparent 60%),
-      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(247,86,79,.04) 0%, transparent 70%);
+      radial-gradient(ellipse 60% 60% at 90% 100%, rgba(155,110,247,.07) 0%, transparent 60%);
     pointer-events:none; z-index:0;
   }
   .page { position:relative; z-index:1; }
 
-  /* ── Screens ── */
   .screen { display:none; max-width:620px; margin:0 auto; padding:20px 16px 64px; animation:fadeUp .3s ease; }
   .screen.active { display:block; }
   @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
 
-  /* ── Logo ── */
+  /* Logo */
   .game-logo { text-align:center; margin-bottom:24px; padding-top:20px; }
-  .logo-badge {
-    display:inline-flex; align-items:center; gap:10px;
-    background:var(--surface); border:1.5px solid var(--border);
-    border-radius:40px; padding:10px 24px;
-    box-shadow:var(--shadow);
-  }
+  .logo-badge { display:inline-flex; align-items:center; gap:10px; background:var(--surface); border:1.5px solid var(--border); border-radius:40px; padding:10px 24px; box-shadow:var(--shadow); }
   .logo-icon { font-size:22px; }
   .logo-text { font-size:22px; font-weight:900; letter-spacing:-.5px; color:var(--accent); }
   .logo-sub { font-size:13px; color:var(--text-muted); margin-top:8px; }
 
-  /* ── Panel ── */
-  .panel {
-    background:var(--surface); border:1.5px solid var(--border);
-    border-radius:var(--radius); padding:20px;
-    margin-bottom:14px; box-shadow:var(--shadow);
-  }
-  .panel-title {
-    font-size:11px; font-weight:800; letter-spacing:.12em;
-    text-transform:uppercase; color:var(--accent);
-    margin-bottom:14px; display:flex; align-items:center; gap:6px;
-  }
+  /* Panel */
+  .panel { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:14px; box-shadow:var(--shadow); }
+  .panel-title { font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:14px; display:flex; align-items:center; gap:6px; }
   .panel-title::before { content:''; width:3px; height:14px; background:var(--accent); border-radius:2px; display:inline-block; }
+  .panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .panel-header .panel-title { margin-bottom:0; }
 
-  /* ── Counter ── */
+  /* Counter */
   .counter-wrap { display:flex; align-items:center; gap:16px; }
   .counter-row { display:flex; align-items:center; background:var(--surface2); border:1.5px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; }
-  .counter-btn {
-    width:48px; height:48px;
-    border:none; background:transparent;
-    color:var(--accent); font-size:26px; font-weight:700;
-    cursor:pointer; transition:all .15s; font-family:'Nunito',sans-serif;
-    display:flex; align-items:center; justify-content:center;
-    line-height:1;
-  }
+  .counter-btn { width:48px; height:48px; border:none; background:transparent; color:var(--accent); font-size:26px; font-weight:700; cursor:pointer; transition:all .15s; font-family:'Nunito',sans-serif; display:flex; align-items:center; justify-content:center; line-height:1; }
   .counter-btn:hover { background:var(--accent-light); }
   .counter-btn:active { transform:scale(.88); }
-  .counter-display {
-    min-width:60px; text-align:center;
-    font-size:30px; font-weight:900; color:var(--text);
-    border-left:1.5px solid var(--border); border-right:1.5px solid var(--border);
-    padding:0 8px; line-height:48px;
-  }
+  .counter-display { min-width:60px; text-align:center; font-size:30px; font-weight:900; color:var(--text); border-left:1.5px solid var(--border); border-right:1.5px solid var(--border); padding:0 8px; line-height:48px; }
   .counter-meta { font-size:12px; color:var(--text-muted); line-height:1.6; }
 
-  /* ── Timer hint ── */
-  .timer-hint {
-    display:flex; align-items:center; gap:8px;
-    background:var(--gold-light); border:1.5px solid rgba(240,149,42,.25);
-    border-radius:var(--radius-xs); padding:9px 13px;
-    font-size:13px; color:#b36c10; margin-top:12px; font-weight:600;
-  }
+  .timer-hint { display:flex; align-items:center; gap:8px; background:var(--gold-light); border:1.5px solid rgba(240,149,42,.25); border-radius:var(--radius-xs); padding:9px 13px; font-size:13px; color:#b36c10; margin-top:12px; font-weight:600; }
 
-  /* ── Word inputs ── */
+  /* Word inputs */
   .word-list { display:flex; flex-direction:column; gap:6px; }
   .word-row { display:flex; align-items:center; gap:7px; }
-  .word-num {
-    font-size:12px; color:var(--text-light); font-weight:800;
-    min-width:20px; text-align:right; flex-shrink:0;
-  }
-  .word-row input {
-    flex:1; background:var(--surface2);
-    border:1.5px solid var(--border-soft);
-    border-radius:var(--radius-xs); padding:9px 11px;
-    color:var(--text); font-size:14px; font-weight:600;
-    font-family:'Nunito','Noto Sans KR',sans-serif;
-    transition:border-color .15s, box-shadow .15s; outline:none;
-  }
-  .word-row input:focus {
-    border-color:var(--accent);
-    box-shadow:0 0 0 3px rgba(79,110,247,.12);
-    background:#fff;
-  }
+  .word-num { font-size:12px; color:var(--text-light); font-weight:800; min-width:20px; text-align:right; flex-shrink:0; }
+  .word-row input { flex:1; background:var(--surface2); border:1.5px solid var(--border-soft); border-radius:var(--radius-xs); padding:9px 11px; color:var(--text); font-size:14px; font-weight:600; font-family:'Nunito','Noto Sans KR',sans-serif; transition:border-color .15s, box-shadow .15s; outline:none; }
+  .word-row input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(79,110,247,.12); background:#fff; }
   .word-row input::placeholder { color:var(--text-light); font-weight:400; }
   .word-sep { color:var(--text-light); font-size:16px; flex-shrink:0; font-weight:700; }
 
-  /* ── Buttons ── */
-  .btn {
-    display:inline-flex; align-items:center; justify-content:center; gap:7px;
-    padding:13px 22px; border-radius:var(--radius-sm);
-    font-size:15px; font-weight:800; cursor:pointer;
-    font-family:'Nunito',sans-serif; transition:all .15s; border:none;
-    letter-spacing:-.2px;
-  }
-  .btn-primary {
-    background:var(--accent); color:#fff; width:100%;
-    box-shadow:0 4px 18px rgba(79,110,247,.35);
-  }
+  /* Buttons */
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; padding:13px 22px; border-radius:var(--radius-sm); font-size:15px; font-weight:800; cursor:pointer; font-family:'Nunito',sans-serif; transition:all .15s; border:none; letter-spacing:-.2px; }
+  .btn-primary { background:var(--accent); color:#fff; width:100%; box-shadow:0 4px 18px rgba(79,110,247,.35); }
   .btn-primary:hover { background:#3d5ce8; box-shadow:0 6px 24px rgba(79,110,247,.45); transform:translateY(-1px); }
-  .btn-secondary {
-    background:var(--surface2); border:1.5px solid var(--border-soft);
-    color:var(--text-muted); width:100%; font-weight:700;
-  }
+  .btn-secondary { background:var(--surface2); border:1.5px solid var(--border-soft); color:var(--text-muted); width:100%; font-weight:700; }
   .btn-secondary:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
-  .btn-qr {
-    background:var(--purple); color:#fff; width:100%;
-    box-shadow:0 4px 18px rgba(155,110,247,.35);
-  }
+  .btn-qr { background:var(--purple); color:#fff; width:100%; box-shadow:0 4px 18px rgba(155,110,247,.35); }
   .btn-qr:hover { background:#8a5aef; transform:translateY(-1px); }
   .btn:active { transform:scale(.97) !important; }
   .btn-row { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
   .err-msg { font-size:13px; color:var(--red); margin-top:8px; min-height:18px; font-weight:600; }
 
-  /* ── QR Modal ── */
-  .modal-overlay {
-    display:none; position:fixed; inset:0;
-    background:rgba(26,29,46,.45); backdrop-filter:blur(4px);
-    z-index:200; align-items:center; justify-content:center;
+  /* ── History Button ── */
+  .history-btn {
+    display:inline-flex; align-items:center; gap:5px;
+    background:var(--surface2); border:1.5px solid var(--border);
+    border-radius:var(--radius-xs); padding:6px 12px;
+    font-size:12px; font-weight:700; color:var(--text-muted);
+    cursor:pointer; transition:all .15s; font-family:'Nunito',sans-serif;
   }
+  .history-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
+  .history-btn svg { width:14px; height:14px; }
+
+  /* ── History Modal ── */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(26,29,46,.45); backdrop-filter:blur(4px); z-index:200; align-items:center; justify-content:center; }
   .modal-overlay.show { display:flex; }
-  .modal-box {
-    background:#fff; border:1.5px solid var(--border);
-    border-radius:20px; padding:28px 24px; text-align:center;
-    max-width:380px; width:92%; max-height:92vh; overflow-y:auto;
-    box-shadow:0 20px 60px rgba(79,110,247,.18);
-    animation:popUp .25s ease;
-  }
+  .modal-box { background:#fff; border:1.5px solid var(--border); border-radius:20px; padding:24px 20px; text-align:center; max-width:420px; width:94%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(79,110,247,.18); animation:popUp .25s ease; }
   @keyframes popUp { from{transform:scale(.92);opacity:0} to{transform:scale(1);opacity:1} }
-  .modal-box h2 { font-size:20px; font-weight:900; margin-bottom:6px; color:var(--text); }
-  .modal-box .modal-desc { font-size:13px; color:var(--text-muted); margin-bottom:18px; line-height:1.6; }
+  .modal-box h2 { font-size:19px; font-weight:900; margin-bottom:4px; color:var(--text); }
+  .modal-box .modal-desc { font-size:13px; color:var(--text-muted); margin-bottom:16px; line-height:1.5; }
+
+  /* History list */
+  .history-empty { padding:32px 0; color:var(--text-muted); font-size:14px; font-weight:600; }
+  .history-empty-icon { font-size:32px; margin-bottom:8px; }
+  .history-item {
+    background:var(--surface2); border:1.5px solid var(--border-soft);
+    border-radius:var(--radius-sm); padding:12px 14px;
+    margin-bottom:8px; text-align:left; cursor:pointer;
+    transition:all .15s; position:relative;
+  }
+  .history-item:hover { border-color:var(--accent); background:var(--accent-light); }
+  .history-item-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .history-item-title { font-size:13px; font-weight:800; color:var(--text); }
+  .history-item-meta { font-size:11px; color:var(--text-muted); font-weight:600; }
+  .history-item-words { display:flex; flex-wrap:wrap; gap:5px; }
+  .history-word-chip {
+    background:#fff; border:1px solid var(--border-soft);
+    border-radius:20px; padding:2px 9px;
+    font-size:11px; font-weight:700; color:var(--text-muted);
+  }
+  .history-item-del {
+    position:absolute; top:10px; right:10px;
+    background:none; border:none; cursor:pointer;
+    color:var(--text-light); font-size:16px; padding:2px 5px;
+    border-radius:4px; transition:color .15s;
+    font-family:'Nunito',sans-serif; line-height:1;
+  }
+  .history-item-del:hover { color:var(--red); background:var(--red-light); }
+  .history-actions { display:flex; gap:8px; margin-top:12px; }
+  .history-actions .btn { font-size:13px; padding:9px 14px; }
+  .history-clear-btn { background:none; border:none; font-size:12px; color:var(--text-light); font-weight:700; cursor:pointer; font-family:'Nunito',sans-serif; padding:4px 0; text-decoration:underline; margin-top:10px; display:block; width:100%; text-align:center; }
+  .history-clear-btn:hover { color:var(--red); }
+
+  /* QR Modal */
   #qr-container { background:#fff; border-radius:12px; padding:12px; display:inline-block; margin-bottom:14px; border:1.5px solid var(--border); }
   #qr-container canvas, #qr-container img { display:block; }
-  .qr-url-box {
-    background:var(--surface2); border:1.5px solid var(--border-soft);
-    border-radius:var(--radius-xs); padding:9px 12px;
-    font-size:11px; color:var(--text-muted); word-break:break-all;
-    text-align:left; margin-bottom:12px; line-height:1.5; max-height:56px; overflow-y:auto;
-  }
-  .modal-word-list {
-    text-align:left; margin-bottom:14px;
-    background:var(--surface2); border:1.5px solid var(--border-soft);
-    border-radius:var(--radius-xs); padding:12px 14px;
-    max-height:180px; overflow-y:auto;
-  }
+  .qr-url-box { background:var(--surface2); border:1.5px solid var(--border-soft); border-radius:var(--radius-xs); padding:9px 12px; font-size:11px; color:var(--text-muted); word-break:break-all; text-align:left; margin-bottom:12px; line-height:1.5; max-height:56px; overflow-y:auto; }
+  .modal-word-list { text-align:left; margin-bottom:14px; background:var(--surface2); border:1.5px solid var(--border-soft); border-radius:var(--radius-xs); padding:12px 14px; max-height:180px; overflow-y:auto; }
   .modal-word-list .mwl-title { font-size:12px; color:var(--accent); margin-bottom:8px; font-weight:800; }
   .modal-word-item { font-size:13px; color:var(--text); padding:3px 0; border-bottom:1px solid var(--border-soft); font-weight:600; }
   .modal-word-item:last-child { border-bottom:none; }
-  .host-guide {
-    background:var(--gold-light); border:1.5px solid rgba(240,149,42,.25);
-    border-radius:var(--radius-xs); padding:14px 16px; text-align:left;
-    font-size:12px; color:#7a4f0a; line-height:1.85; margin-bottom:14px; font-weight:600;
-  }
+  .host-guide { background:var(--gold-light); border:1.5px solid rgba(240,149,42,.25); border-radius:var(--radius-xs); padding:14px 16px; text-align:left; font-size:12px; color:#7a4f0a; line-height:1.85; margin-bottom:14px; font-weight:600; }
   .host-guide strong { display:block; font-size:13px; margin-bottom:6px; color:#b36c10; }
   .host-guide a { color:var(--accent); }
   .host-guide code { color:var(--accent2); background:var(--accent2-light); padding:1px 5px; border-radius:4px; }
-  .copy-btn {
-    background:var(--surface2); border:1.5px solid var(--border-soft);
-    color:var(--text-muted); padding:9px 16px; border-radius:var(--radius-xs);
-    font-size:13px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:700;
-    transition:all .15s; margin-bottom:10px; width:100%;
-  }
+  .copy-btn { background:var(--surface2); border:1.5px solid var(--border-soft); color:var(--text-muted); padding:9px 16px; border-radius:var(--radius-xs); font-size:13px; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:700; transition:all .15s; margin-bottom:10px; width:100%; }
   .copy-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
   .copy-btn.copied { border-color:var(--green); color:var(--green); background:var(--green-light); }
+  .modal-close-row { display:flex; gap:8px; margin-top:4px; }
 
-  /* ── Game Screen ── */
+  /* Game */
   .game-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
   .game-title { font-size:18px; font-weight:900; color:var(--text); }
   .game-progress-sub { font-size:12px; color:var(--text-muted); margin-top:2px; font-weight:600; }
-
-  /* Timer ring */
   .timer-ring-wrap { position:relative; width:64px; height:64px; flex-shrink:0; }
   .timer-ring-wrap svg { transform:rotate(-90deg); }
   .timer-track { fill:none; stroke:var(--surface3); stroke-width:5; }
   .timer-arc { fill:none; stroke:var(--green); stroke-width:5; stroke-linecap:round; transition:stroke-dashoffset .9s linear, stroke .3s; }
   .timer-label { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:17px; font-weight:900; line-height:1; }
   .timer-label small { font-size:9px; color:var(--text-muted); font-weight:700; letter-spacing:.05em; }
-
-  /* Progress bar */
   .progress-bar { height:7px; background:var(--surface3); border-radius:4px; overflow:hidden; margin-bottom:16px; }
   .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--purple)); border-radius:4px; transition:width .4s ease; }
-
-  /* Combo */
   .combo-badge { text-align:center; height:26px; margin-bottom:6px; font-size:14px; font-weight:800; color:var(--gold); opacity:0; }
   .combo-badge.show { opacity:1; animation:popIn .25s ease; }
   @keyframes popIn { 0%{transform:scale(.6)} 60%{transform:scale(1.15)} 100%{transform:scale(1)} }
-
-  /* Match columns */
   .match-cols { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .col-header {
-    font-size:11px; font-weight:800; letter-spacing:.08em;
-    text-transform:uppercase; color:var(--text-muted);
-    text-align:center; margin-bottom:8px;
-    background:var(--surface3); border-radius:var(--radius-xs);
-    padding:5px 0;
-  }
+  .col-header { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); text-align:center; margin-bottom:8px; background:var(--surface3); border-radius:var(--radius-xs); padding:5px 0; }
   .card-list { display:flex; flex-direction:column; gap:7px; }
-  .card {
-    background:#fff; border:2px solid var(--border-soft);
-    border-radius:var(--radius-sm); padding:10px 10px;
-    font-size:13px; font-weight:700; text-align:center; cursor:pointer;
-    transition:all .15s; user-select:none;
-    min-height:44px; display:flex; align-items:center; justify-content:center;
-    line-height:1.3; color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,.05);
-  }
-  .card:hover:not(.matched):not(.wrong) {
-    border-color:var(--accent); background:var(--accent-light);
-    color:var(--accent); transform:translateY(-1px);
-    box-shadow:0 3px 12px rgba(79,110,247,.15);
-  }
-  .card.selected {
-    border-color:var(--accent); background:var(--accent-light);
-    color:var(--accent); box-shadow:0 0 0 3px rgba(79,110,247,.18);
-  }
-  .card.matched {
-    border-color:var(--green); background:var(--green-light);
-    color:#158a4a; cursor:default; pointer-events:none;
-    box-shadow:none;
-  }
-  .card.wrong {
-    border-color:var(--red); background:var(--red-light);
-    color:#c0392b; animation:shake .35s ease;
-  }
+  .card { background:#fff; border:2px solid var(--border-soft); border-radius:var(--radius-sm); padding:10px 10px; font-size:13px; font-weight:700; text-align:center; cursor:pointer; transition:all .15s; user-select:none; min-height:44px; display:flex; align-items:center; justify-content:center; line-height:1.3; color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,.05); }
+  .card:hover:not(.matched):not(.wrong) { border-color:var(--accent); background:var(--accent-light); color:var(--accent); transform:translateY(-1px); box-shadow:0 3px 12px rgba(79,110,247,.15); }
+  .card.selected { border-color:var(--accent); background:var(--accent-light); color:var(--accent); box-shadow:0 0 0 3px rgba(79,110,247,.18); }
+  .card.matched { border-color:var(--green); background:var(--green-light); color:#158a4a; cursor:default; pointer-events:none; box-shadow:none; }
+  .card.wrong { border-color:var(--red); background:var(--red-light); color:#c0392b; animation:shake .35s ease; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
-
-  /* Timeout overlay */
   .timeout-overlay { display:none; position:fixed; inset:0; background:rgba(26,29,46,.4); backdrop-filter:blur(4px); z-index:100; align-items:center; justify-content:center; }
   .timeout-overlay.show { display:flex; }
-  .timeout-box {
-    background:#fff; border:1.5px solid var(--border);
-    border-radius:20px; padding:32px 28px; text-align:center;
-    max-width:300px; width:90%;
-    box-shadow:0 20px 60px rgba(79,110,247,.2);
-    animation:popUp .25s ease;
-  }
+  .timeout-box { background:#fff; border:1.5px solid var(--border); border-radius:20px; padding:32px 28px; text-align:center; max-width:300px; width:90%; box-shadow:0 20px 60px rgba(79,110,247,.2); animation:popUp .25s ease; }
   .timeout-box h2 { font-size:22px; font-weight:900; color:var(--red); margin-bottom:8px; }
   .timeout-box p { font-size:13px; color:var(--text-muted); margin-bottom:20px; line-height:1.6; white-space:pre-line; font-weight:600; }
 
-  /* ── Result ── */
+  /* Result */
   .result-hero { text-align:center; padding:20px 0 8px; }
-  .result-grade-wrap {
-    display:inline-flex; align-items:center; justify-content:center;
-    width:90px; height:90px; border-radius:50%;
-    background:linear-gradient(135deg,var(--accent),var(--purple));
-    margin-bottom:12px;
-    box-shadow:0 8px 28px rgba(79,110,247,.3);
-  }
+  .result-grade-wrap { display:inline-flex; align-items:center; justify-content:center; width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--purple)); margin-bottom:12px; box-shadow:0 8px 28px rgba(79,110,247,.3); }
   .result-grade { font-size:48px; font-weight:900; color:#fff; line-height:1; }
   .result-label { font-size:15px; color:var(--text-muted); margin-bottom:4px; font-weight:600; }
   .result-score-num { font-size:44px; font-weight:900; color:var(--text); }
-
   .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:18px 0; }
-  .stat-card {
-    background:#fff; border:1.5px solid var(--border-soft);
-    border-radius:var(--radius-sm); padding:12px 6px; text-align:center;
-    box-shadow:0 1px 6px rgba(0,0,0,.05);
-  }
+  .stat-card { background:#fff; border:1.5px solid var(--border-soft); border-radius:var(--radius-sm); padding:12px 6px; text-align:center; box-shadow:0 1px 6px rgba(0,0,0,.05); }
   .stat-val { font-size:18px; font-weight:900; color:var(--text); }
   .stat-lbl { font-size:10px; color:var(--text-muted); margin-top:3px; font-weight:700; }
-
-  .log-panel {
-    background:#fff; border:1.5px solid var(--border-soft);
-    border-radius:var(--radius); padding:16px 18px; margin:14px 0;
-    box-shadow:0 1px 6px rgba(0,0,0,.05);
-  }
+  .log-panel { background:#fff; border:1.5px solid var(--border-soft); border-radius:var(--radius); padding:16px 18px; margin:14px 0; box-shadow:0 1px 6px rgba(0,0,0,.05); }
   .log-title { font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; }
   .log-row { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f0f0f0; font-size:13px; font-weight:600; }
   .log-row:last-child { border-bottom:none; }
   .log-ok { color:var(--green); font-size:15px; font-weight:900; }
   .log-fail { color:var(--red); font-size:15px; font-weight:900; }
-
-  /* Game bottom buttons */
   .game-btns { display:flex; gap:10px; margin-top:16px; }
   .game-btns .btn { flex:1; }
 </style>
@@ -353,7 +246,18 @@
   </div>
 
   <div class="panel">
-    <div class="panel-title">단어 입력</div>
+    <!-- 패널 헤더: 제목 + 히스토리 버튼 -->
+    <div class="panel-header">
+      <div class="panel-title" style="margin-bottom:0;">단어 입력</div>
+      <button class="history-btn" onclick="openHistory()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 4 1 10 7 10"></polyline>
+          <path d="M3.51 15a9 9 0 1 0 .49-4.95"></path>
+          <polyline points="12 7 12 12 15 15"></polyline>
+        </svg>
+        히스토리
+      </button>
+    </div>
     <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;font-weight:600;">왼쪽: 한국어 뜻 &nbsp;│&nbsp; 오른쪽: 영어 단어</p>
     <div class="word-list" id="word-inputs"></div>
     <div class="err-msg" id="err-msg"></div>
@@ -406,9 +310,7 @@
 <!-- ══ RESULT ══ -->
 <div id="result-screen" class="screen">
   <div class="result-hero">
-    <div class="result-grade-wrap">
-      <div class="result-grade" id="result-grade">S</div>
-    </div>
+    <div class="result-grade-wrap"><div class="result-grade" id="result-grade">S</div></div>
     <div class="result-label" id="result-label">완벽해요!</div>
     <div class="result-score-num" id="result-score">100점</div>
   </div>
@@ -441,12 +343,24 @@
   </div>
 </div>
 
+<!-- ══ HISTORY MODAL ══ -->
+<div class="modal-overlay" id="history-modal">
+  <div class="modal-box">
+    <h2>📂 단어 히스토리</h2>
+    <p class="modal-desc">이전에 사용한 단어 세트를 불러올 수 있어요</p>
+    <div id="history-list"></div>
+    <button class="history-clear-btn" id="history-clear-btn" onclick="clearAllHistory()" style="display:none;">전체 삭제</button>
+    <div class="modal-close-row" style="margin-top:14px;">
+      <button class="btn btn-secondary" onclick="closeHistory()">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ QR MODAL ══ -->
 <div class="modal-overlay" id="qr-modal">
   <div class="modal-box">
     <h2>📲 학생에게 공유하기</h2>
     <p class="modal-desc">QR을 스캔하면 같은 단어로<br>게임이 바로 시작돼요!</p>
-
     <div id="qr-not-hosted" style="display:none;">
       <div class="host-guide">
         <strong>⚠️ 웹에 올려야 QR 공유가 가능해요</strong>
@@ -460,7 +374,6 @@
       </div>
       <button class="btn btn-secondary" onclick="closeQR()">닫기</button>
     </div>
-
     <div id="qr-hosted" style="display:none;">
       <div id="qr-container"></div>
       <div class="qr-url-box" id="qr-url-text"></div>
@@ -476,6 +389,7 @@
 </div>
 
 <script>
+/* ─── Constants ─── */
 const SAMPLE=[
   {kr:'사과',en:'apple'},{kr:'바나나',en:'banana'},{kr:'고양이',en:'cat'},
   {kr:'강아지',en:'dog'},{kr:'책',en:'book'},{kr:'학교',en:'school'},
@@ -486,7 +400,10 @@ const SAMPLE=[
   {kr:'행복',en:'happy'},{kr:'음악',en:'music'}
 ];
 const CIRC=2*Math.PI*27;
+const HISTORY_KEY='wordmatch_history';
+const MAX_HISTORY=20;
 
+/* ─── State ─── */
 let selectedCount=5, inputCount=5;
 let words=[];
 let selKor=null, selEng=null;
@@ -494,6 +411,99 @@ let matched=0, tries=0, wrongs=0, combo=0;
 let timerInterval=null, timeLeft=0, totalTime=0, elapsedSec=0;
 let startTs, attempts=[];
 
+/* ─── History helpers ─── */
+function getHistory(){
+  try{ return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); }
+  catch(e){ return []; }
+}
+function saveHistory(h){ try{ localStorage.setItem(HISTORY_KEY,JSON.stringify(h)); }catch(e){} }
+
+function addToHistory(wordArr){
+  const h=getHistory();
+  // 중복 체크 (같은 단어 세트면 날짜만 업데이트)
+  const key=wordArr.map(w=>w.kr+'|'+w.en).sort().join(',');
+  const dupIdx=h.findIndex(item=>item.key===key);
+  if(dupIdx>-1) h.splice(dupIdx,1); // 기존 제거 후 맨 앞에 추가
+  h.unshift({
+    key,
+    words:wordArr,
+    date:new Date().toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}),
+    time:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}),
+    count:wordArr.length
+  });
+  if(h.length>MAX_HISTORY) h.splice(MAX_HISTORY);
+  saveHistory(h);
+}
+
+/* ─── History Modal ─── */
+function openHistory(){
+  renderHistoryList();
+  document.getElementById('history-modal').classList.add('show');
+}
+function closeHistory(){ document.getElementById('history-modal').classList.remove('show'); }
+
+function renderHistoryList(){
+  const h=getHistory();
+  const container=document.getElementById('history-list');
+  const clearBtn=document.getElementById('history-clear-btn');
+  container.innerHTML='';
+
+  if(h.length===0){
+    container.innerHTML=`<div class="history-empty"><div class="history-empty-icon">📭</div>아직 저장된 단어 세트가 없어요.<br>게임을 시작하면 자동으로 저장돼요!</div>`;
+    clearBtn.style.display='none';
+    return;
+  }
+  clearBtn.style.display='block';
+
+  h.forEach((item,idx)=>{
+    const el=document.createElement('div');
+    el.className='history-item';
+    // 단어 칩 최대 6개 표시
+    const chips=item.words.slice(0,6).map(w=>`<span class="history-word-chip">${w.en}</span>`).join('');
+    const more=item.words.length>6?`<span class="history-word-chip">+${item.words.length-6}개</span>`:'';
+    el.innerHTML=`
+      <button class="history-item-del" onclick="deleteHistory(event,${idx})">✕</button>
+      <div class="history-item-header">
+        <div class="history-item-title">단어 ${item.count}개 세트</div>
+        <div class="history-item-meta">${item.date} ${item.time}</div>
+      </div>
+      <div class="history-item-words">${chips}${more}</div>
+    `;
+    el.addEventListener('click', ()=>loadHistory(item));
+    container.appendChild(el);
+  });
+}
+
+function loadHistory(item){
+  const n=item.words.length;
+  selectedCount=n; inputCount=n;
+  document.getElementById('count-display').textContent=n;
+  updateTimerHint(n);
+  buildInputs(n);
+  item.words.forEach((w,i)=>{
+    const kr=document.getElementById('kr-'+i), en=document.getElementById('en-'+i);
+    if(kr&&en){ kr.value=w.kr; en.value=w.en; }
+  });
+  closeHistory();
+  // 부드럽게 단어 입력 패널로 스크롤
+  setTimeout(()=>{ document.getElementById('word-inputs').scrollIntoView({behavior:'smooth',block:'center'}); },200);
+}
+
+function deleteHistory(e, idx){
+  e.stopPropagation();
+  const h=getHistory();
+  h.splice(idx,1);
+  saveHistory(h);
+  renderHistoryList();
+}
+
+function clearAllHistory(){
+  if(!confirm('모든 히스토리를 삭제할까요?')) return;
+  saveHistory([]);
+  renderHistoryList();
+}
+
+/* ─── Counter ─── */
 function changeCount(delta){
   const next=Math.min(20,Math.max(1,selectedCount+delta));
   if(next===selectedCount) return;
@@ -508,6 +518,7 @@ function updateTimerHint(n){
     `제한 시간: ${calcTime(n)}초  (${n}개 × 3초 + 알파 5초)`;
 }
 
+/* ─── Inputs ─── */
 function buildInputs(n){
   const prev=[];
   for(let i=0;i<inputCount;i++){
@@ -549,6 +560,7 @@ function collectWords(){
   return arr;
 }
 
+/* ─── QR ─── */
 function openQR(){
   const w=collectWords(); if(!w) return;
   words=w;
@@ -564,10 +576,7 @@ function openQR(){
     document.getElementById('qr-url-text').textContent=url;
     const ml=document.getElementById('modal-word-list');
     ml.innerHTML='<div class="mwl-title">📚 포함된 단어</div>';
-    w.forEach((x,i)=>{
-      const d=document.createElement('div'); d.className='modal-word-item';
-      d.textContent=`${i+1}. ${x.kr} — ${x.en}`; ml.appendChild(d);
-    });
+    w.forEach((x,i)=>{ const d=document.createElement('div'); d.className='modal-word-item'; d.textContent=`${i+1}. ${x.kr} — ${x.en}`; ml.appendChild(d); });
     const copyBtn=document.getElementById('copy-btn');
     copyBtn.textContent='🔗 링크 복사하기'; copyBtn.classList.remove('copied');
     copyBtn._url=url;
@@ -583,6 +592,7 @@ function copyURL(){
   }).catch(()=>{ prompt('아래 링크를 복사하세요:',btn._url); });
 }
 
+/* ─── URL params ─── */
 function loadFromURL(){
   try{
     const params=new URLSearchParams(location.search);
@@ -600,7 +610,13 @@ function loadFromURL(){
   }catch(e){ return false; }
 }
 
-function startGame(){ const w=collectWords(); if(!w) return; words=w; initGame(); }
+/* ─── Game ─── */
+function startGame(){
+  const w=collectWords(); if(!w) return;
+  words=w;
+  addToHistory(w); // ← 히스토리에 저장
+  initGame();
+}
 function initGame(){
   clearInterval(timerInterval);
   matched=0; tries=0; wrongs=0; combo=0; attempts=[];
@@ -631,8 +647,7 @@ function updateTimerUI(){
   const r=Math.max(0,timeLeft/totalTime);
   arc.style.strokeDashoffset=CIRC*(1-r);
   arc.style.stroke=r>.5?'#22c16b':r>.25?'#f0952a':'#f7564f';
-  numEl.textContent=timeLeft;
-  numEl.style.color=r<=.25?'#f7564f':'var(--text)';
+  numEl.textContent=timeLeft; numEl.style.color=r<=.25?'#f7564f':'var(--text)';
 }
 function selectKor(el,idx){ if(el.classList.contains('matched')) return; if(selKor) selKor.el.classList.remove('selected'); selKor={el,idx}; el.classList.add('selected'); tryMatch(); }
 function selectEng(el,idx){ if(el.classList.contains('matched')) return; if(selEng) selEng.el.classList.remove('selected'); selEng={el,idx}; el.classList.add('selected'); tryMatch(); }
@@ -696,6 +711,7 @@ function restartGame(){ if(words.length) initGame(); }
 function backToSetup(){ clearInterval(timerInterval); document.getElementById('timeout-overlay').classList.remove('show'); showScreen('setup-screen'); }
 function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
+/* ─── Init ─── */
 buildInputs(selectedCount);
 updateTimerHint(selectedCount);
 if(loadFromURL()) setTimeout(startGame, 400);
