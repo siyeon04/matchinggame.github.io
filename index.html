@@ -202,6 +202,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .copy-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l);}
 .copy-btn.copied{border-color:var(--green);color:var(--green);background:var(--green-l);}
 
+.sound-toggle-btn{display:inline-flex;align-items:center;gap:7px;background:var(--surface2);border:1.5px solid var(--border);border-radius:30px;padding:8px 18px;font-size:13px;font-weight:800;color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;transition:all .15s;}
+.sound-toggle-btn:hover{border-color:var(--accent);background:var(--accent-l);}
+.sound-toggle-btn.muted{color:var(--muted);background:var(--surface3);}
 .timeout-overlay{display:none;position:fixed;inset:0;background:rgba(26,29,46,.4);backdrop-filter:blur(4px);z-index:100;align-items:center;justify-content:center;}
 .timeout-overlay.show{display:flex;}
 .timeout-box{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:32px 28px;text-align:center;max-width:300px;width:90%;box-shadow:0 20px 60px rgba(79,110,247,.2);animation:popUp .25s ease;}
@@ -246,10 +249,16 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="game-card-badge">SPELLING</div>
     </div>
   </div>
-  <div class="panel" style="text-align:center;padding:16px 20px;">
-    <div style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.7;">
+  <div class="panel" style="padding:16px 20px;">
+    <div style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.8;text-align:center;margin-bottom:14px;">
       📂 단어를 한 번 입력하면 <strong style="color:var(--text);">두 게임 모두</strong> 사용 가능해요!<br>
       📲 QR 코드로 학생 폰에 바로 공유할 수 있어요.
+    </div>
+    <div style="display:flex;justify-content:center;">
+      <button class="sound-toggle-btn" id="sound-toggle-btn" onclick="toggleSound()">
+        <span id="sound-toggle-icon">🔊</span>
+        <span id="sound-toggle-label">소리 켜짐</span>
+      </button>
     </div>
   </div>
 </div>
@@ -445,6 +454,180 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 <script>
 /* ═══════════════════════════════════════
+   SOUND ENGINE  (Web Audio API - no files)
+═══════════════════════════════════════ */
+let audioCtx=null;
+let bgmNodes={osc:null,gain:null}; // background music oscillators
+let soundEnabled=true;
+let bgmPlaying=false;
+let bgmBeatTimer=null;
+
+function getAudioCtx(){
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function toggleSound(){
+  soundEnabled=!soundEnabled;
+  const btn=document.getElementById('sound-toggle-btn');
+  const icon=document.getElementById('sound-toggle-icon');
+  const label=document.getElementById('sound-toggle-label');
+  if(soundEnabled){
+    btn.classList.remove('muted');
+    icon.textContent='🔊'; label.textContent='소리 켜짐';
+    if(bgmPlaying) startBGM();
+  }else{
+    btn.classList.add('muted');
+    icon.textContent='🔇'; label.textContent='소리 꺼짐';
+    stopBGM();
+  }
+}
+
+/* ── generic tone ── */
+function playTone(freq,dur,type='sine',vol=0.18,delay=0){
+  if(!soundEnabled) return;
+  try{
+    const ctx=getAudioCtx();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type=type; osc.frequency.value=freq;
+    const t=ctx.currentTime+delay;
+    gain.gain.setValueAtTime(0,t);
+    gain.gain.linearRampToValueAtTime(vol,t+0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    osc.start(t); osc.stop(t+dur+0.05);
+  }catch(e){}
+}
+
+function playChord(freqs,dur,type='sine',vol=0.12,delay=0){
+  freqs.forEach(f=>playTone(f,dur,type,vol,delay));
+}
+
+/* ── SFX ── */
+function sfxCorrect(){
+  // bright ascending chord
+  playTone(523,0.12,'sine',0.18);
+  playTone(659,0.12,'sine',0.15,0.08);
+  playTone(784,0.2,'sine',0.18,0.16);
+}
+function sfxWrong(){
+  playTone(200,0.06,'sawtooth',0.12);
+  playTone(180,0.12,'sawtooth',0.10,0.07);
+}
+function sfxCombo(n){
+  // higher pitch for bigger combo
+  const base=400+(n*60);
+  playTone(base,0.08,'sine',0.15);
+  playTone(base*1.25,0.08,'sine',0.13,0.06);
+  playTone(base*1.5,0.15,'sine',0.15,0.12);
+}
+function sfxGameStart(){
+  // ascending fanfare
+  [261,329,392,523].forEach((f,i)=>playTone(f,0.15,'triangle',0.16,i*0.1));
+}
+function sfxGameClear(){
+  // victory jingle
+  const melody=[523,523,523,659,523,659,784];
+  const durs  =[0.12,0.12,0.12,0.28,0.12,0.12,0.36];
+  let t=0;
+  melody.forEach((f,i)=>{playTone(f,durs[i],'sine',0.2,t);t+=durs[i]+0.03;});
+  // harmony
+  const harm=[392,392,392,523,392,523,659];
+  let t2=0;
+  harm.forEach((f,i)=>{playTone(f,durs[i],'sine',0.12,t2);t2+=durs[i]+0.03;});
+}
+function sfxTimeout(){
+  playTone(300,0.15,'sawtooth',0.14);
+  playTone(240,0.15,'sawtooth',0.14,0.18);
+  playTone(180,0.35,'sawtooth',0.14,0.36);
+}
+
+/* ── 5-second warning beeps ── */
+function sfxWarningBeep(i){
+  // 삥삥삥삥삥 — 5 ascending beeps
+  const freqs=[880,988,1047,1175,1319];
+  playTone(freqs[i]||880, 0.09,'square',0.13);
+}
+
+/* ══════════════════════════════════════
+   BGM — cheerful chiptune loop
+   C-major pentatonic melodic pattern
+══════════════════════════════════════ */
+const BGM_MELODY=[
+  // [freq, duration, delay_from_beat_start]
+  {f:523,d:0.18},{f:659,d:0.18},{f:784,d:0.18},{f:880,d:0.18},
+  {f:784,d:0.18},{f:659,d:0.18},{f:523,d:0.36},
+  {f:587,d:0.18},{f:698,d:0.18},{f:880,d:0.18},{f:1047,d:0.18},
+  {f:880,d:0.18},{f:698,d:0.18},{f:587,d:0.36},
+  {f:523,d:0.18},{f:784,d:0.18},{f:659,d:0.18},{f:523,d:0.18},
+  {f:392,d:0.18},{f:523,d:0.36},
+];
+const BGM_BASS=[
+  {f:130,d:0.36},{f:174,d:0.36},{f:196,d:0.36},{f:174,d:0.36},
+  {f:130,d:0.36},{f:174,d:0.36},{f:196,d:0.36},{f:174,d:0.36},
+  {f:130,d:0.36},{f:196,d:0.36},{f:174,d:0.36},{f:130,d:0.36},
+  {f:174,d:0.36},{f:130,d:0.36},{f:196,d:0.36},{f:174,d:0.36},
+];
+
+let bgmMelIdx=0, bgmBassIdx=0, bgmScheduleTimer=null;
+
+function startBGM(){
+  if(!soundEnabled) return;
+  bgmPlaying=true;
+  bgmMelIdx=0; bgmBassIdx=0;
+  scheduleBGM();
+}
+
+function scheduleBGM(){
+  if(!soundEnabled||!bgmPlaying) return;
+  try{
+    const ctx=getAudioCtx();
+    let t=ctx.currentTime+0.05;
+    // schedule next 4 melody notes
+    for(let i=0;i<4;i++){
+      const note=BGM_MELODY[bgmMelIdx%BGM_MELODY.length];
+      const bassNote=BGM_BASS[bgmBassIdx%BGM_BASS.length];
+      playTone(note.f,note.d,'triangle',0.08,t-ctx.currentTime);
+      playTone(bassNote.f,bassNote.d,'sine',0.07,t-ctx.currentTime);
+      // hi-hat
+      playNoise(0.03,0.04,t-ctx.currentTime);
+      if(i%2===0) playNoise(0.05,0.06,t-ctx.currentTime+note.d*0.5);
+      t+=note.d+0.02;
+      bgmMelIdx++; bgmBassIdx++;
+    }
+    const nextIn=(t-ctx.currentTime-0.1)*1000;
+    bgmScheduleTimer=setTimeout(scheduleBGM,Math.max(50,nextIn));
+  }catch(e){}
+}
+
+function stopBGM(){
+  bgmPlaying=false;
+  if(bgmScheduleTimer) clearTimeout(bgmScheduleTimer);
+}
+
+function playNoise(vol,dur,delay){
+  if(!soundEnabled) return;
+  try{
+    const ctx=getAudioCtx();
+    const buf=ctx.createBuffer(1,ctx.sampleRate*0.05,ctx.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1);
+    const src=ctx.createBufferSource();
+    src.buffer=buf;
+    const gain=ctx.createGain();
+    const filter=ctx.createBiquadFilter();
+    filter.type='highpass'; filter.frequency.value=6000;
+    src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    const t=ctx.currentTime+delay;
+    gain.gain.setValueAtTime(vol,t);
+    gain.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    src.start(t); src.stop(t+dur+0.05);
+  }catch(e){}
+}
+
+/* ═══════════════════════════════════════
    CONSTANTS & SHARED STATE
 ═══════════════════════════════════════ */
 const SAMPLE=[
@@ -611,6 +794,7 @@ function startGame(){
 
 function backToSetupFrom(from){
   clearInterval(timerInterval);
+  stopBGM();
   document.getElementById('timeout-overlay').classList.remove('show');
   showScreen('setup-screen');
 }
@@ -638,10 +822,13 @@ function initMatch(){
   sEn.forEach(w=>{const el=mkCard(w.en);el.dataset.idx=w.idx;el.onclick=()=>mSelectEng(el,w.idx);colEn.appendChild(el);});
   document.getElementById('timeout-overlay').classList.remove('show');
   showScreen('match-game-screen');
+  stopBGM(); sfxGameStart(); setTimeout(startBGM,600);
   timerInterval=setInterval(()=>{
     timeLeft--;elapsedSec=Math.floor((Date.now()-startTs)/1000);
     updateTimerUI('match');
-    if(timeLeft<=0){clearInterval(timerInterval);showTimeout('match');}
+    if(timeLeft===5){stopBGM();}
+    if(timeLeft>=1&&timeLeft<=5){sfxWarningBeep(5-timeLeft);}
+    if(timeLeft<=0){clearInterval(timerInterval);stopBGM();showTimeout('match');}
   },1000);
 }
 function mkCard(t){const el=document.createElement('div');el.className='card';el.textContent=t;return el;}
@@ -656,14 +843,16 @@ function mTryMatch(){
     eEl.classList.remove('selected');eEl.classList.add('matched');
     mMatched++;mCombo++;
     mAttempts.push({kr:kEl.textContent,en:eEl.textContent,ok:true});
+    if(mCombo>=3) sfxCombo(mCombo); else sfxCorrect();
     showMatchCombo(mCombo);
     document.getElementById('match-progress-text').textContent=`${mMatched} / ${words.length} 완료`;
     document.getElementById('match-progress-fill').style.width=(mMatched/words.length*100)+'%';
     mSelKor=null;mSelEng=null;
-    if(mMatched===words.length){clearInterval(timerInterval);elapsedSec=Math.floor((Date.now()-startTs)/1000);setTimeout(()=>showResult('match'),500);}
+    if(mMatched===words.length){clearInterval(timerInterval);stopBGM();elapsedSec=Math.floor((Date.now()-startTs)/1000);sfxGameClear();setTimeout(()=>showResult('match'),500);}
   }else{
     mWrongs++;mCombo=0;
     mAttempts.push({kr:kEl.textContent,en:eEl.textContent,ok:false});
+    sfxWrong();
     kEl.classList.remove('selected');kEl.classList.add('wrong');
     eEl.classList.remove('selected');eEl.classList.add('wrong');
     mSelKor=null;mSelEng=null;
@@ -700,10 +889,13 @@ function initSpell(){
   showScreen('spell-game-screen');
   renderSpellQ();
   updateTimerUI('spell');
+  stopBGM(); sfxGameStart(); setTimeout(startBGM,600);
   timerInterval=setInterval(()=>{
     timeLeft--;elapsedSec=Math.floor((Date.now()-startTs)/1000);
     updateTimerUI('spell');
-    if(timeLeft<=0){clearInterval(timerInterval);showTimeout('spell');}
+    if(timeLeft===5){stopBGM();}
+    if(timeLeft>=1&&timeLeft<=5){sfxWarningBeep(5-timeLeft);}
+    if(timeLeft<=0){clearInterval(timerInterval);stopBGM();showTimeout('spell');}
   },1000);
 }
 
@@ -734,24 +926,25 @@ function spChoose(btn,chosen,correct){
     btn.classList.add('sp-correct');
     spScore++;
     if(dot) dot.classList.add('ok');
+    sfxCorrect();
   }else{
     btn.classList.add('sp-wrong');
     spWrongs++;
     if(dot) dot.classList.add('fail');
-    // reveal correct
+    sfxWrong();
     document.querySelectorAll('.spell-choice').forEach(b=>{
       if(b.textContent===correct) b.classList.add('sp-reveal');
       else if(b!==btn) b.classList.add('sp-disabled');
     });
   }
   spAttempts.push({kr:spQuestions[spIdx].kr,correct,chosen,ok:isOk});
-  // next question after 900ms
   setTimeout(()=>{
     spIdx++;
     if(spIdx>=spQuestions.length){
-      clearInterval(timerInterval);
+      clearInterval(timerInterval);stopBGM();
       elapsedSec=Math.floor((Date.now()-startTs)/1000);
       document.getElementById('spell-progress-fill').style.width='100%';
+      sfxGameClear();
       setTimeout(()=>showResult('spell'),400);
     }else{
       renderSpellQ();
@@ -789,6 +982,7 @@ function showTimeout(mode){
     msg=`${spScore}개 맞혔어요.\n다시 도전해보세요!`;
   }
   document.getElementById('timeout-msg').textContent=msg;
+  sfxTimeout();
   document.getElementById('timeout-overlay').classList.add('show');
 }
 function closeTimeoutRetry(){
