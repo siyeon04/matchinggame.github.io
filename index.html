@@ -348,23 +348,33 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <button class="btn btn-secondary" style="width:auto;padding:8px 14px;font-size:13px;" onclick="showScreen('home-screen')">← 홈</button>
   </div>
 
-  <!-- Firebase 설정 -->
+  <!-- 세션 안내 -->
+  <div id="session-info-panel" class="firebase-setup-box" style="background:var(--accent-l);border-color:var(--border);">
+    <strong style="color:var(--accent);">📡 수업 세션 방식으로 동작해요</strong>
+    <span style="color:#3a4a99;">
+    QR을 공유할 때 세션 ID가 URL에 포함되고,<br>
+    학생 결과가 <strong>선생님 브라우저</strong>에 저장돼요.<br><br>
+    ⚠️ 학생과 선생님이 <strong>같은 기기</strong>를 쓰거나<br>
+    선생님이 QR 페이지를 <strong>직접 열어</strong> 확인할 수도 있어요.<br><br>
+    💡 다른 기기 간 실시간 공유는 아래 <strong>Firebase 연결</strong>을 사용하세요.
+    </span>
+  </div>
+
+  <!-- Firebase 설정 (선택) -->
   <div id="firebase-setup-panel" class="firebase-setup-box">
-    <strong>🔧 Firebase 설정이 필요해요</strong>
-    학생 결과를 실시간으로 받으려면 무료 Firebase DB가 필요해요:<br>
-    1️⃣ <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> 접속 → 프로젝트 생성<br>
+    <strong>🔧 Firebase 연결 (선택사항 — 다른 기기 간 실시간 공유)</strong>
+    1️⃣ <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → 프로젝트 생성<br>
     2️⃣ Realtime Database → 만들기 → <strong>테스트 모드</strong> 선택<br>
-    3️⃣ DB URL 복사 (예: <code>https://프로젝트명-default-rtdb.firebaseio.com</code>)<br>
-    4️⃣ 아래에 붙여넣고 저장:
-    <input class="firebase-url-input" id="firebase-url-input" placeholder="https://your-project-default-rtdb.firebaseio.com" />
-    <button class="firebase-save-btn" onclick="saveFirebaseURL()">저장하고 연결하기</button>
+    3️⃣ DB URL 복사: <code>https://프로젝트명-default-rtdb.firebaseio.com</code><br>
+    <input class="firebase-url-input" id="firebase-url-input" placeholder="https://xxx-default-rtdb.firebaseio.com" />
+    <button class="firebase-save-btn" onclick="saveFirebaseURL()">저장하고 연결</button>
   </div>
 
   <div id="db-status-row" style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px;display:none;">
     <span class="db-status-dot none" id="db-status-dot"></span>
     <span id="db-status-text">연결 중...</span>
     &nbsp;·&nbsp;
-    <button class="clear-dash-btn" onclick="resetFirebaseURL()">DB 주소 변경</button>
+    <button class="clear-dash-btn" onclick="resetFirebaseURL()">변경</button>
   </div>
 
   <div class="dash-controls">
@@ -1201,11 +1211,13 @@ function showResult(mode){
       submittedAt:new Date().toISOString()
     };
     submitResult(resultData).then(()=>{
-      submitStatus.textContent='✅ 선생님께 결과가 전달됐어요!';
+      const hasFb=!!getFirebaseURL();
+      submitStatus.textContent= hasFb ? '✅ 선생님께 결과가 전달됐어요!' : '✅ 결과가 저장됐어요!';
       submitStatus.style.color='var(--green)';
     }).catch(()=>{
-      submitStatus.textContent='❌ 전송 실패 (인터넷 연결 확인)';
-      submitStatus.style.color='var(--red)';
+      // localStorage는 성공했고 Firebase만 실패
+      submitStatus.textContent='✅ 저장됨 (Firebase 전송 실패 — 선생님 기기에서 확인 필요)';
+      submitStatus.style.color='var(--gold)';
     });
   }else{
     nameRow.style.display='none';
@@ -1332,35 +1344,61 @@ function loadFromURL(){
 /* ═══════════════════════════════════════
    STUDENT / TEACHER MODE
 ═══════════════════════════════════════ */
-let isStudentMode=false;   // true = came from QR
+let isStudentMode=false;
 let studentName='';
 let pendingGameMode='match';
-const FIREBASE_KEY='wordgame_firebase_url';
 
+/* ═══════════════════════════════════════
+   결과 저장 시스템
+   - 기본: localStorage (같은 브라우저)
+   - 선택: Firebase Realtime DB (다른 기기)
+═══════════════════════════════════════ */
+const LOCAL_RESULTS_KEY='wordgame_results_v2';
+const FIREBASE_KEY='wordgame_firebase_url';
+const SESSION_KEY='wordgame_session';
+
+/* ── localStorage 결과 저장 ── */
+function getLocalResults(){
+  try{ return JSON.parse(localStorage.getItem(LOCAL_RESULTS_KEY)||'[]'); }catch(e){ return []; }
+}
+function addLocalResult(data){
+  const arr=getLocalResults();
+  arr.push(data);
+  try{ localStorage.setItem(LOCAL_RESULTS_KEY,JSON.stringify(arr)); }catch(e){}
+}
+function clearLocalResults(){
+  localStorage.removeItem(LOCAL_RESULTS_KEY);
+}
+
+/* ── Firebase ── */
 function getFirebaseURL(){
   return (localStorage.getItem(FIREBASE_KEY)||'').replace(/\/+$/,'');
 }
 function saveFirebaseURL(){
   const val=document.getElementById('firebase-url-input').value.trim().replace(/\/+$/,'');
-  if(!val.startsWith('https://')){alert('올바른 Firebase URL을 입력해주세요.\n예: https://프로젝트명-default-rtdb.firebaseio.com');return;}
+  if(!val.startsWith('https://')){
+    alert('올바른 Firebase URL을 입력해주세요.\n예: https://matchinggame-aaedb-default-rtdb.firebaseio.com');
+    return;
+  }
   localStorage.setItem(FIREBASE_KEY,val);
   document.getElementById('firebase-setup-panel').style.display='none';
   document.getElementById('db-status-row').style.display='block';
-  setDBStatus('none','연결 확인 중...');
-  checkFirebaseConnection();
-  setTimeout(refreshDashboard,800);
+  checkFirebaseConnection().then(()=>refreshDashboard());
 }
 function resetFirebaseURL(){
   localStorage.removeItem(FIREBASE_KEY);
   document.getElementById('firebase-setup-panel').style.display='block';
   document.getElementById('db-status-row').style.display='none';
-  dashData=[];renderDashboard();
 }
 function checkFirebaseConnection(){
   const url=getFirebaseURL();
-  if(!url){setDBStatus('none','DB 미연결');return;}
-  fetch(url+'/results.json?shallow=true')
-    .then(r=>{ if(r.ok||r.status===404) setDBStatus('ok','Firebase 연결됨'); else setDBStatus('err','연결 실패 — 테스트 모드로 DB를 생성했는지 확인해주세요'); })
+  if(!url){ setDBStatus('none','Firebase 미연결'); return Promise.resolve(); }
+  setDBStatus('none','연결 확인 중...');
+  return fetch(url+'/results.json')
+    .then(r=>{
+      if(r.ok) setDBStatus('ok','Firebase 연결됨 ✓');
+      else setDBStatus('err','연결 실패 (HTTP '+r.status+') — 규칙을 read/write: true 로 설정했는지 확인');
+    })
     .catch(()=>setDBStatus('err','연결 실패 — URL을 다시 확인해주세요'));
 }
 function setDBStatus(state,msg){
@@ -1371,17 +1409,40 @@ function setDBStatus(state,msg){
   txt.textContent=msg;
 }
 
-/* submit result to Firebase */
-async function submitResult(data){
+/* ── Firebase에 결과 POST ── */
+async function pushToFirebase(data){
   const url=getFirebaseURL();
-  if(!url) throw new Error('No Firebase URL');
-  const r=await fetch(url+'/results.json',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(data)
-  });
-  if(!r.ok) throw new Error('HTTP '+r.status);
-  return r.json();
+  if(!url) return false;
+  try{
+    const r=await fetch(url+'/results.json',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    });
+    return r.ok;
+  }catch(e){ return false; }
+}
+
+/* ── Firebase에서 결과 GET ── */
+async function fetchFromFirebase(){
+  const url=getFirebaseURL();
+  if(!url) return null;
+  try{
+    const r=await fetch(url+'/results.json');
+    if(!r.ok) return null;
+    const raw=await r.json();
+    if(!raw) return [];
+    return Object.values(raw);
+  }catch(e){ return null; }
+}
+
+/* ── 메인 submit: localStorage + Firebase 동시 저장 ── */
+async function submitResult(data){
+  addLocalResult(data);                  // 항상 로컬 저장 (절대 실패 없음)
+  const fbOk=await pushToFirebase(data); // Firebase 있으면 추가 전송
+  if(!fbOk && getFirebaseURL()){
+    throw new Error('firebase_fail');    // Firebase만 실패 → 호출부에서 노란 경고 표시
+  }
 }
 
 /* ── Name screen ── */
@@ -1434,28 +1495,18 @@ function setDashFilter(f){
 }
 
 async function refreshDashboard(){
-  const url=getFirebaseURL();
-  if(!url){renderDashboard();return;}
-  setDBStatus('none','불러오는 중...');
-  try{
-    const r=await fetch(url+'/results.json');
-    if(!r.ok){
-      setDBStatus('err','불러오기 실패');
-      dashData=[];renderDashboard();return;
-    }
-    const raw=await r.json();
-    if(!raw){dashData=[];renderDashboard();setDBStatus('ok','Firebase 연결됨');return;}
-    dashData=Object.entries(raw).map(([id,v])=>({id,...v}));
-    // score 내림차순, 같은 점수면 시간 오름차순
-    dashData.sort((a,b)=>{
-      if((b.score||0)!==(a.score||0)) return (b.score||0)-(a.score||0);
-      return (a.elapsedSec||0)-(b.elapsedSec||0);
-    });
+  // Firebase가 연결된 경우 Firebase 우선, 아니면 localStorage
+  const fbResults=await fetchFromFirebase();
+  if(fbResults!==null){
+    dashData=fbResults;
     setDBStatus('ok',`Firebase 연결됨 · ${dashData.length}명`);
-  }catch(e){
-    setDBStatus('err','연결 실패');
-    dashData=[];
+  } else {
+    dashData=getLocalResults();
   }
+  dashData.sort((a,b)=>{
+    if((b.score||0)!==(a.score||0)) return (b.score||0)-(a.score||0);
+    return (a.elapsedSec||0)-(b.elapsedSec||0);
+  });
   renderDashboard();
 }
 
@@ -1511,9 +1562,12 @@ function escHtml(s){ return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 
 async function clearDashboard(){
   if(!confirm('모든 학생 결과를 삭제할까요?')) return;
+  // localStorage 삭제
+  clearLocalResults();
+  // Firebase 삭제
   const url=getFirebaseURL();
   if(url){
-    try{await fetch(url+'/results.json',{method:'DELETE'});}catch(e){}
+    try{ await fetch(url+'/results.json',{method:'DELETE'}); }catch(e){}
   }
   dashData=[];
   renderDashboard();
