@@ -61,6 +61,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .counter-btn:active{transform:scale(.88);}
 .counter-display{min-width:60px;text-align:center;font-size:30px;font-weight:900;color:var(--text);border-left:1.5px solid var(--border);border-right:1.5px solid var(--border);padding:0 8px;line-height:48px;}
 .counter-meta{font-size:12px;color:var(--muted);line-height:1.6;}
+
+/* ── TIMER SETTINGS ── */
+.timer-settings-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;}
+.timer-setting-item{flex:1;min-width:120px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;}
+.timer-setting-label{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+.timer-setting-val{font-size:15px;font-weight:900;color:var(--accent);}
+.timer-slider{width:100%;accent-color:var(--accent);cursor:pointer;margin-top:4px;}
+.timer-result-hint{margin-top:10px;font-size:12px;color:#b36c10;font-weight:700;text-align:center;background:var(--gold-l);border-radius:var(--rx);padding:6px 10px;}
+
 .timer-hint{display:flex;align-items:center;gap:8px;background:var(--gold-l);border:1.5px solid rgba(240,149,42,.25);border-radius:var(--rx);padding:9px 13px;font-size:13px;color:#b36c10;margin-top:12px;font-weight:600;}
 
 /* word inputs */
@@ -511,7 +520,17 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       </div>
       <div class="counter-meta">개 &nbsp;·&nbsp; 최소 1 · 최대 20</div>
     </div>
-    <div class="timer-hint">⏱&nbsp;<span id="timer-hint-text">제한 시간: 20초 (5개 × 3초 + 알파 5초)</span></div>
+    <div class="timer-hint" id="timer-hint-box">⏱&nbsp;<span id="timer-hint-text">제한 시간: 20초</span></div>
+    <div class="timer-settings-row">
+      <div class="timer-setting-item">
+        <div class="timer-setting-label">단어당 시간 <span class="timer-setting-val" id="sec-per-word-val">3초</span></div>
+        <input type="range" class="timer-slider" id="sec-per-word" min="1" max="10" value="3" step="1" oninput="onTimerSlider()">
+      </div>
+      <div class="timer-setting-item">
+        <div class="timer-setting-label">알파 시간 <span class="timer-setting-val" id="alpha-sec-val">5초</span></div>
+        <input type="range" class="timer-slider" id="alpha-sec" min="0" max="30" value="5" step="1" oninput="onTimerSlider()">
+      </div>
+    </div>
   </div>
 
   <div class="panel">
@@ -955,7 +974,18 @@ let timerInterval=null, timeLeft=0, totalTime=0;
 let startTs, elapsedSec=0;
 let lastGameMode='match';
 
-function calcTime(n){return n*3+5;}
+function calcTime(n){
+  const spw=parseInt(document.getElementById('sec-per-word')?.value||3);
+  const alpha=parseInt(document.getElementById('alpha-sec')?.value||5);
+  return n*spw+alpha;
+}
+function onTimerSlider(){
+  const spw=parseInt(document.getElementById('sec-per-word').value);
+  const alpha=parseInt(document.getElementById('alpha-sec').value);
+  document.getElementById('sec-per-word-val').textContent=spw+'초';
+  document.getElementById('alpha-sec-val').textContent=alpha+'초';
+  updateTimerHint(selectedCount);
+}
 function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 
@@ -995,7 +1025,10 @@ function changeCount(delta){
   buildInputs(next);
 }
 function updateTimerHint(n){
-  document.getElementById('timer-hint-text').textContent=`제한 시간: ${calcTime(n)}초  (${n}개 × 3초 + 알파 5초)`;
+  const spw=parseInt(document.getElementById('sec-per-word')?.value||3);
+  const alpha=parseInt(document.getElementById('alpha-sec')?.value||5);
+  const total=calcTime(n);
+  document.getElementById('timer-hint-text').textContent=`제한 시간: ${total}초  (${n}개 × ${spw}초 + 알파 ${alpha}초)`;
 }
 
 function buildInputs(n){
