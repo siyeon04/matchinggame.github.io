@@ -281,13 +281,48 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .db-status-dot.ok{background:var(--green);}
 .db-status-dot.err{background:var(--red);}
 .db-status-dot.none{background:var(--light);}
+/* ── LOGIN SCREEN ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-box{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:36px 28px;width:100%;max-width:340px;box-shadow:0 8px 40px rgba(79,110,247,.13);text-align:center;}
+.login-icon{font-size:48px;margin-bottom:12px;}
+.login-title{font-size:22px;font-weight:900;color:var(--text);margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:28px;}
+.login-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;text-align:left;}
+.login-label{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.05em;}
+.login-input{background:var(--surface2);border:1.5px solid var(--soft);border-radius:var(--rx);padding:11px 14px;font-size:15px;font-weight:600;color:var(--text);font-family:'Nunito','Noto Sans KR',sans-serif;outline:none;transition:border-color .15s,box-shadow .15s;width:100%;}
+.login-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,110,247,.12);background:#fff;}
+.login-err{font-size:13px;color:var(--red);font-weight:700;min-height:18px;margin-bottom:8px;}
+.login-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--rs);padding:13px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;width:100%;transition:all .15s;box-shadow:0 4px 18px rgba(79,110,247,.3);}
+.login-btn:hover{background:#3d5ce8;transform:translateY(-1px);}
+.login-btn:active{transform:scale(.97);}
 </style>
 </head>
 <body>
 <div class="page">
 
+<!-- ══ LOGIN ══ -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-box">
+    <div class="login-icon">🔐</div>
+    <div class="login-title">단어 게임</div>
+    <div class="login-sub">선생님 전용 로그인</div>
+    <div class="login-field">
+      <div class="login-label">아이디</div>
+      <input class="login-input" id="login-id" type="text" placeholder="아이디 입력" autocomplete="off"
+        onkeydown="if(event.key==='Enter') document.getElementById('login-pw').focus()"/>
+    </div>
+    <div class="login-field">
+      <div class="login-label">비밀번호</div>
+      <input class="login-input" id="login-pw" type="password" placeholder="비밀번호 입력"
+        onkeydown="if(event.key==='Enter') doLogin()"/>
+    </div>
+    <div class="login-err" id="login-err"></div>
+    <button class="login-btn" onclick="doLogin()">로그인</button>
+  </div>
+</div>
+
 <!-- ══ HOME ══ -->
-<div id="home-screen" class="screen active">
+<div id="home-screen" class="screen">
   <div class="home-logo">
     <h1>🔤 단어 게임</h1>
     <p>게임 모드를 선택하세요</p>
@@ -1637,7 +1672,35 @@ async function clearDashboard(){
 /* ── Init ── */
 buildInputs(selectedCount);
 updateTimerHint(selectedCount);
-if(loadFromURL()) setTimeout(()=>showNameScreen(currentMode),400);
+
+// QR로 들어온 학생 → 로그인 없이 바로 게임
+if(loadFromURL()){
+  document.getElementById('login-screen').style.display='none';
+  setTimeout(()=>showNameScreen(currentMode),400);
+} else {
+  // 선생님 → 로그인 체크
+  if(sessionStorage.getItem('wg_auth')==='ok'){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('home-screen').classList.add('active');
+  }
+  // 로그인 화면이 기본으로 보임
+}
+
+function doLogin(){
+  const id=document.getElementById('login-id').value.trim();
+  const pw=document.getElementById('login-pw').value.trim();
+  const errEl=document.getElementById('login-err');
+  if(id==='hyun' && pw==='star'){
+    sessionStorage.setItem('wg_auth','ok');
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('home-screen').classList.add('active');
+    errEl.textContent='';
+  } else {
+    errEl.textContent='아이디 또는 비밀번호가 틀렸어요.';
+    document.getElementById('login-pw').value='';
+    document.getElementById('login-pw').focus();
+  }
+}
 </script>
 </body>
 </html>
