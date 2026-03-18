@@ -1301,7 +1301,9 @@ function openQR(){
   if(isHosted){
     const encoded=encodeURIComponent(JSON.stringify(w.map(x=>({k:x.kr,e:x.en}))));
     const modeParam=currentMode;
-    const url=location.origin+location.pathname+'?words='+encoded+'&mode='+modeParam;
+    const fbUrl=getFirebaseURL();
+    const fbParam=fbUrl?'&fb='+encodeURIComponent(fbUrl):'';
+    const url=location.origin+location.pathname+'?words='+encoded+'&mode='+modeParam+fbParam;
     const qrDiv=document.getElementById('qr-container');qrDiv.innerHTML='';
     new QRCode(qrDiv,{text:url,width:196,height:196,correctLevel:QRCode.CorrectLevel.M});
     document.getElementById('qr-url-text').textContent=url;
@@ -1331,7 +1333,10 @@ function loadFromURL(){
     if(w.length===0) return false;
     const mode=params.get('mode')||'match';
     currentMode=mode;
-    isStudentMode=true;   // ← QR로 들어온 학생
+    isStudentMode=true;
+    // Firebase URL을 QR에서 받아서 저장 (학생 기기에 Firebase URL 주입)
+    const fbParam=params.get('fb');
+    if(fbParam){ localStorage.setItem(FIREBASE_KEY, decodeURIComponent(fbParam)); }
     selectedCount=w.length;inputCount=w.length;
     document.getElementById('count-display').textContent=w.length;
     updateTimerHint(w.length);buildInputs(w.length);
