@@ -522,7 +522,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="btn-row">
     <button class="btn" id="result-retry-btn" onclick="retryResult()">↺ 다시 도전</button>
     <button class="btn btn-secondary" id="result-word-change-btn" onclick="backToSetupFrom('result')">✏️ 단어 변경</button>
-    <button class="btn btn-secondary" onclick="showScreen('home-screen')">🏠 홈으로</button>
+    <button class="btn btn-secondary" id="result-home-btn" onclick="showScreen('home-screen')">🏠 홈으로</button>
   </div>
 </div>
 
@@ -534,7 +534,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <p id="timeout-msg"></p>
     <div style="display:flex;flex-direction:column;gap:10px;">
       <button class="btn btn-primary" id="timeout-retry-btn" onclick="closeTimeoutRetry()">↺ 다시 도전</button>
-      <button class="btn btn-secondary" onclick="closeTimeoutSetup()">✏️ 단어 변경</button>
+      <button class="btn btn-secondary" id="timeout-word-change-btn" onclick="closeTimeoutSetup()">✏️ 단어 변경</button>
     </div>
   </div>
 </div>
@@ -1114,6 +1114,9 @@ function showTimeout(mode){
     msg=`${spScore}개 맞혔어요.\n다시 도전해보세요!`;
   }
   document.getElementById('timeout-msg').textContent=msg;
+  // 학생 모드: 단어 변경 버튼 숨기기
+  const wordChangeBtn=document.getElementById('timeout-word-change-btn');
+  if(wordChangeBtn) wordChangeBtn.style.display=isStudentMode?'none':'block';
   sfxTimeout();
   document.getElementById('timeout-overlay').classList.add('show');
 }
@@ -1180,6 +1183,7 @@ function showResult(mode){
     nameRow.style.display='block';
     nameSpan.textContent=studentName;
     wordChangeBtn.style.display='none'; // 학생은 단어 변경 불가
+    document.getElementById('result-home-btn').style.display='none'; // 학생은 홈 버튼 없음
     submitRow.style.display='block';
     submitStatus.textContent='📤 결과를 선생님께 전송 중...';
     submitStatus.style.color='var(--muted)';
@@ -1193,6 +1197,7 @@ function showResult(mode){
       wrongs,
       acc,
       grade,
+      startedAt: new Date(startTs).toISOString(),
       submittedAt:new Date().toISOString()
     };
     submitResult(resultData).then(()=>{
@@ -1205,6 +1210,7 @@ function showResult(mode){
   }else{
     nameRow.style.display='none';
     wordChangeBtn.style.display='block';
+    document.getElementById('result-home-btn').style.display='block';
     submitRow.style.display='none';
   }
 
@@ -1332,30 +1338,30 @@ let pendingGameMode='match';
 const FIREBASE_KEY='wordgame_firebase_url';
 
 function getFirebaseURL(){
-  return localStorage.getItem(FIREBASE_KEY)||'';
+  return (localStorage.getItem(FIREBASE_KEY)||'').replace(/\/+$/,'');
 }
 function saveFirebaseURL(){
   const val=document.getElementById('firebase-url-input').value.trim().replace(/\/+$/,'');
-  if(!val.startsWith('https://')){alert('올바른 Firebase URL을 입력해주세요.');return;}
+  if(!val.startsWith('https://')){alert('올바른 Firebase URL을 입력해주세요.\n예: https://프로젝트명-default-rtdb.firebaseio.com');return;}
   localStorage.setItem(FIREBASE_KEY,val);
   document.getElementById('firebase-setup-panel').style.display='none';
   document.getElementById('db-status-row').style.display='block';
+  setDBStatus('none','연결 확인 중...');
   checkFirebaseConnection();
-  refreshDashboard();
+  setTimeout(refreshDashboard,800);
 }
 function resetFirebaseURL(){
   localStorage.removeItem(FIREBASE_KEY);
   document.getElementById('firebase-setup-panel').style.display='block';
   document.getElementById('db-status-row').style.display='none';
+  dashData=[];renderDashboard();
 }
 function checkFirebaseConnection(){
   const url=getFirebaseURL();
   if(!url){setDBStatus('none','DB 미연결');return;}
-  setDBStatus('none','연결 확인 중...');
-  fetch(url+'/.json?shallow=true').then(r=>{
-    if(r.ok) setDBStatus('ok','Firebase 연결됨');
-    else setDBStatus('err','연결 실패 (DB 규칙 확인)');
-  }).catch(()=>setDBStatus('err','연결 실패'));
+  fetch(url+'/results.json?shallow=true')
+    .then(r=>{ if(r.ok||r.status===404) setDBStatus('ok','Firebase 연결됨'); else setDBStatus('err','연결 실패 — 테스트 모드로 DB를 생성했는지 확인해주세요'); })
+    .catch(()=>setDBStatus('err','연결 실패 — URL을 다시 확인해주세요'));
 }
 function setDBStatus(state,msg){
   const dot=document.getElementById('db-status-dot');
@@ -1368,14 +1374,14 @@ function setDBStatus(state,msg){
 /* submit result to Firebase */
 async function submitResult(data){
   const url=getFirebaseURL();
-  if(!url) return;
-  try{
-    await fetch(url+'/results.json',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(data)
-    });
-  }catch(e){console.log('Submit failed',e);}
+  if(!url) throw new Error('No Firebase URL');
+  const r=await fetch(url+'/results.json',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(data)
+  });
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
 }
 
 /* ── Name screen ── */
@@ -1430,23 +1436,42 @@ function setDashFilter(f){
 async function refreshDashboard(){
   const url=getFirebaseURL();
   if(!url){renderDashboard();return;}
+  setDBStatus('none','불러오는 중...');
   try{
     const r=await fetch(url+'/results.json');
-    if(!r.ok){dashData=[];renderDashboard();return;}
+    if(!r.ok){
+      setDBStatus('err','불러오기 실패');
+      dashData=[];renderDashboard();return;
+    }
     const raw=await r.json();
-    if(!raw){dashData=[];renderDashboard();return;}
+    if(!raw){dashData=[];renderDashboard();setDBStatus('ok','Firebase 연결됨');return;}
     dashData=Object.entries(raw).map(([id,v])=>({id,...v}));
-    dashData.sort((a,b)=>(b.score||0)-(a.score||0));
-  }catch(e){dashData=[];}
+    // score 내림차순, 같은 점수면 시간 오름차순
+    dashData.sort((a,b)=>{
+      if((b.score||0)!==(a.score||0)) return (b.score||0)-(a.score||0);
+      return (a.elapsedSec||0)-(b.elapsedSec||0);
+    });
+    setDBStatus('ok',`Firebase 연결됨 · ${dashData.length}명`);
+  }catch(e){
+    setDBStatus('err','연결 실패');
+    dashData=[];
+  }
   renderDashboard();
+}
+
+function fmtTime(isoStr){
+  if(!isoStr) return '';
+  try{
+    return new Date(isoStr).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }catch(e){return '';}
 }
 
 function renderDashboard(){
   const list=document.getElementById('dashboard-list');
-  let filtered=dashData.filter(d=>dashFilter==='all'||d.mode===dashFilter);
+  const filtered=dashData.filter(d=>dashFilter==='all'||d.mode===dashFilter);
   if(filtered.length===0){
     const fbUrl=getFirebaseURL();
-    list.innerHTML=`<div class="dash-empty"><div class="dash-empty-icon">${fbUrl?'📭':'🔌'}</div>${fbUrl?'아직 제출된 결과가 없어요.':'Firebase DB를 먼저 연결해주세요.'}</div>`;
+    list.innerHTML=`<div class="dash-empty"><div class="dash-empty-icon">${fbUrl?'📭':'🔌'}</div>${fbUrl?'아직 제출된 결과가 없어요.<br><small style="color:var(--light);">학생들이 게임을 완료하면 여기에 나타나요</small>':'Firebase DB를 먼저 연결해주세요.'}</div>`;
     return;
   }
   list.innerHTML='';
@@ -1457,21 +1482,32 @@ function renderDashboard(){
     const s=d.score||0;
     const scoreClass=s>=95?'score-s':s>=80?'score-a':s>=60?'score-b':s>=40?'score-c':'score-d';
     const modeTag=d.mode==='match'?'<span class="mode-tag mode-match">매칭</span>':'<span class="mode-tag mode-spell">스펠링</span>';
-    const time=d.submittedAt?new Date(d.submittedAt).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):'';
+    const startedStr=fmtTime(d.startedAt);
+    const submittedStr=fmtTime(d.submittedAt);
     const card=document.createElement('div');
     card.className='student-card';
     card.innerHTML=`
       <div class="rank-badge ${rankClass}">${rankLabel}</div>
       <div class="student-card-info">
-        <div class="student-card-name">${d.studentName||'익명'}</div>
-        <div class="student-card-meta">${modeTag} &nbsp;⏱ ${d.elapsedSec||0}초 &nbsp;❌ ${d.wrongs||0}번 &nbsp;${time}</div>
+        <div class="student-card-name">${escHtml(d.studentName||'익명')}</div>
+        <div class="student-card-meta">
+          ${modeTag}
+          &nbsp;⏱ <strong>${d.elapsedSec||0}초</strong>
+          &nbsp;❌ ${d.wrongs||0}번
+        </div>
+        <div class="student-card-meta" style="margin-top:2px;font-size:10px;">
+          🕐 시작 ${startedStr||'?'} &nbsp;→&nbsp; 제출 ${submittedStr||'?'}
+        </div>
       </div>
       <div class="student-card-right">
         <div class="score-pill ${scoreClass}">${s}점</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:700;">${d.grade||''}</div>
       </div>`;
     list.appendChild(card);
   });
 }
+
+function escHtml(s){ return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 async function clearDashboard(){
   if(!confirm('모든 학생 결과를 삭제할까요?')) return;
