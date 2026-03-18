@@ -224,6 +224,63 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .setup-logo-text.match-color{color:var(--accent);}
 .setup-logo-text.spell-color{color:var(--orange);}
 .setup-logo-sub{font-size:12px;color:var(--muted);margin-top:6px;}
+
+/* ── STUDENT NAME SCREEN ── */
+.name-screen-wrap{text-align:center;padding:40px 0 20px;}
+.name-screen-icon{font-size:56px;margin-bottom:16px;}
+.name-screen-title{font-size:22px;font-weight:900;color:var(--text);margin-bottom:6px;}
+.name-screen-sub{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.6;}
+.name-input-wrap{display:flex;flex-direction:column;gap:10px;max-width:320px;margin:0 auto;}
+.name-input{background:#fff;border:2px solid var(--border);border-radius:var(--rs);padding:14px 18px;font-size:18px;font-weight:700;text-align:center;color:var(--text);font-family:'Nunito','Noto Sans KR',sans-serif;outline:none;transition:border-color .15s,box-shadow .15s;}
+.name-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,110,247,.14);}
+.name-input::placeholder{color:var(--light);font-weight:400;font-size:15px;}
+.name-err{font-size:13px;color:var(--red);font-weight:600;min-height:18px;margin-top:4px;}
+
+/* ── DASHBOARD ── */
+.dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px;}
+.dash-title{font-size:20px;font-weight:900;color:var(--text);}
+.dash-sub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:600;}
+.dash-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+.dash-filter-btn{padding:6px 14px;border-radius:20px;border:1.5px solid var(--soft);background:var(--surface2);font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;color:var(--muted);transition:all .15s;}
+.dash-filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.dash-empty{text-align:center;padding:40px 0;color:var(--muted);font-size:14px;font-weight:600;}
+.dash-empty-icon{font-size:36px;margin-bottom:10px;}
+.dash-live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:dashpulse 1.4s infinite;}
+@keyframes dashpulse{0%,100%{opacity:1}50%{opacity:.3}}
+.student-card{background:#fff;border:1.5px solid var(--soft);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.student-card:hover{border-color:var(--border);background:var(--surface2);}
+.rank-badge{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0;}
+.rank-1{background:#ffd700;color:#7a5800;}
+.rank-2{background:#c0c0c0;color:#555;}
+.rank-3{background:#cd7f32;color:#5a3010;}
+.rank-n{background:var(--surface3);color:var(--muted);}
+.student-card-info{flex:1;min-width:0;}
+.student-card-name{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.student-card-meta{font-size:11px;color:var(--muted);margin-top:2px;font-weight:600;}
+.student-card-right{text-align:right;flex-shrink:0;}
+.score-pill{display:inline-block;padding:4px 12px;border-radius:12px;font-size:13px;font-weight:900;}
+.score-s{background:#ffd70022;color:#b8860b;}
+.score-a{background:var(--green-l);color:#158a4a;}
+.score-b{background:var(--accent-l);color:var(--accent);}
+.score-c{background:var(--gold-l);color:#b36c10;}
+.score-d{background:var(--red-l);color:#c0392b;}
+.mode-tag{display:inline-block;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:800;}
+.mode-match{background:var(--accent-l);color:var(--accent);}
+.mode-spell{background:var(--orange-l);color:var(--orange);}
+.clear-dash-btn{background:none;border:none;font-size:12px;color:var(--light);font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;text-decoration:underline;padding:0;}
+.clear-dash-btn:hover{color:var(--red);}
+.firebase-setup-box{background:var(--gold-l);border:1.5px solid rgba(240,149,42,.25);border-radius:var(--rs);padding:16px;font-size:12px;color:#7a4f0a;line-height:1.8;font-weight:600;margin-bottom:14px;}
+.firebase-setup-box strong{display:block;font-size:13px;margin-bottom:6px;color:#b36c10;}
+.firebase-setup-box a{color:var(--accent);}
+.firebase-setup-box code{background:#fff3e0;padding:1px 5px;border-radius:4px;color:var(--orange);font-size:11px;}
+.firebase-url-input{width:100%;background:#fff;border:1.5px solid var(--soft);border-radius:var(--rx);padding:9px 12px;font-size:12px;color:var(--text);font-family:'Nunito',monospace;outline:none;margin-top:6px;}
+.firebase-url-input:focus{border-color:var(--accent);}
+.firebase-save-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--rx);padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;margin-top:8px;width:100%;transition:background .15s;}
+.firebase-save-btn:hover{background:#3d5ce8;}
+.db-status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;}
+.db-status-dot.ok{background:var(--green);}
+.db-status-dot.err{background:var(--red);}
+.db-status-dot.none{background:var(--light);}
 </style>
 </head>
 <body>
@@ -254,12 +311,75 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       📂 단어를 한 번 입력하면 <strong style="color:var(--text);">두 게임 모두</strong> 사용 가능해요!<br>
       📲 QR 코드로 학생 폰에 바로 공유할 수 있어요.
     </div>
-    <div style="display:flex;justify-content:center;">
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
       <button class="sound-toggle-btn" id="sound-toggle-btn" onclick="toggleSound()">
         <span id="sound-toggle-icon">🔊</span>
         <span id="sound-toggle-label">소리 켜짐</span>
       </button>
+      <button class="sound-toggle-btn" onclick="openDashboard()" style="color:var(--accent);border-color:var(--border);">
+        📊 학생 결과 대시보드
+      </button>
     </div>
+  </div>
+</div>
+
+<!-- ══ STUDENT NAME ══ -->
+<div id="name-screen" class="screen">
+  <div class="name-screen-wrap">
+    <div class="name-screen-icon">👤</div>
+    <div class="name-screen-title">이름을 입력해주세요</div>
+    <div class="name-screen-sub" id="name-screen-sub">선생님이 결과를 확인할 수 있어요!<br>게임 모드: <strong id="name-mode-label">매칭 게임</strong></div>
+    <div class="name-input-wrap">
+      <input class="name-input" id="student-name-input" placeholder="예) 홍길동" maxlength="12" autocomplete="off"
+        onkeydown="if(event.key==='Enter') confirmName()"/>
+      <div class="name-err" id="name-err"></div>
+      <button class="btn btn-primary" onclick="confirmName()">🎮 게임 시작!</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div id="dashboard-screen" class="screen">
+  <div class="dash-header">
+    <div>
+      <div class="dash-title">📊 학생 결과</div>
+      <div class="dash-sub"><span class="dash-live-dot"></span> 실시간 업데이트</div>
+    </div>
+    <button class="btn btn-secondary" style="width:auto;padding:8px 14px;font-size:13px;" onclick="showScreen('home-screen')">← 홈</button>
+  </div>
+
+  <!-- Firebase 설정 -->
+  <div id="firebase-setup-panel" class="firebase-setup-box">
+    <strong>🔧 Firebase 설정이 필요해요</strong>
+    학생 결과를 실시간으로 받으려면 무료 Firebase DB가 필요해요:<br>
+    1️⃣ <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> 접속 → 프로젝트 생성<br>
+    2️⃣ Realtime Database → 만들기 → <strong>테스트 모드</strong> 선택<br>
+    3️⃣ DB URL 복사 (예: <code>https://프로젝트명-default-rtdb.firebaseio.com</code>)<br>
+    4️⃣ 아래에 붙여넣고 저장:
+    <input class="firebase-url-input" id="firebase-url-input" placeholder="https://your-project-default-rtdb.firebaseio.com" />
+    <button class="firebase-save-btn" onclick="saveFirebaseURL()">저장하고 연결하기</button>
+  </div>
+
+  <div id="db-status-row" style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px;display:none;">
+    <span class="db-status-dot none" id="db-status-dot"></span>
+    <span id="db-status-text">연결 중...</span>
+    &nbsp;·&nbsp;
+    <button class="clear-dash-btn" onclick="resetFirebaseURL()">DB 주소 변경</button>
+  </div>
+
+  <div class="dash-controls">
+    <button class="dash-filter-btn active" id="df-all" onclick="setDashFilter('all')">전체</button>
+    <button class="dash-filter-btn" id="df-match" onclick="setDashFilter('match')">🃏 매칭</button>
+    <button class="dash-filter-btn" id="df-spell" onclick="setDashFilter('spell')">✏️ 스펠링</button>
+    <button class="clear-dash-btn" onclick="clearDashboard()" style="margin-left:auto;">전체 삭제</button>
+  </div>
+
+  <div id="dashboard-list">
+    <div class="dash-empty"><div class="dash-empty-icon">📭</div>아직 제출된 결과가 없어요.</div>
+  </div>
+
+  <div style="margin-top:16px;">
+    <button class="btn btn-secondary" onclick="refreshDashboard()">🔄 새로고침</button>
   </div>
 </div>
 
@@ -382,11 +502,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="result-label" id="result-label">완벽해요!</div>
     <div class="result-score-num" id="result-score">100점</div>
   </div>
+  <!-- student name display -->
+  <div id="result-student-name-row" style="text-align:center;margin:6px 0 2px;font-size:14px;font-weight:700;color:var(--muted);display:none;">
+    👤 <span id="result-student-name"></span>의 결과
+  </div>
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-val" id="r-time">0s</div><div class="stat-lbl">소요 시간</div></div>
     <div class="stat-card"><div class="stat-val" id="r-tries">0</div><div class="stat-lbl">총 시도</div></div>
     <div class="stat-card"><div class="stat-val" id="r-wrong">0</div><div class="stat-lbl">틀린 횟수</div></div>
     <div class="stat-card"><div class="stat-val" id="r-acc">0%</div><div class="stat-lbl">정확도</div></div>
+  </div>
+  <div id="result-submit-row" style="display:none;margin-bottom:10px;">
+    <div id="result-submit-status" style="text-align:center;font-size:13px;font-weight:700;color:var(--muted);padding:10px;background:var(--surface2);border-radius:var(--rs);">📤 결과를 선생님께 전송 중...</div>
   </div>
   <div class="log-panel">
     <div class="log-title" id="log-title">기록</div>
@@ -394,7 +521,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </div>
   <div class="btn-row">
     <button class="btn" id="result-retry-btn" onclick="retryResult()">↺ 다시 도전</button>
-    <button class="btn btn-secondary" onclick="backToSetupFrom('result')">✏️ 단어 변경</button>
+    <button class="btn btn-secondary" id="result-word-change-btn" onclick="backToSetupFrom('result')">✏️ 단어 변경</button>
     <button class="btn btn-secondary" onclick="showScreen('home-screen')">🏠 홈으로</button>
   </div>
 </div>
@@ -788,8 +915,13 @@ function startGame(){
   const w=collectWords();if(!w) return;
   words=w;
   addToHistory(w);
-  if(currentMode==='match') initMatch();
-  else initSpell();
+  if(isStudentMode){
+    // student: ask name first
+    showNameScreen(currentMode);
+  }else{
+    if(currentMode==='match') initMatch();
+    else initSpell();
+  }
 }
 
 function backToSetupFrom(from){
@@ -1037,6 +1169,45 @@ function showResult(mode){
   document.getElementById('r-wrong').textContent=wrongs;
   document.getElementById('r-acc').textContent=acc+'%';
 
+  // student mode: show name, hide word-change btn, submit result
+  const nameRow=document.getElementById('result-student-name-row');
+  const nameSpan=document.getElementById('result-student-name');
+  const wordChangeBtn=document.getElementById('result-word-change-btn');
+  const submitRow=document.getElementById('result-submit-row');
+  const submitStatus=document.getElementById('result-submit-status');
+
+  if(isStudentMode&&studentName){
+    nameRow.style.display='block';
+    nameSpan.textContent=studentName;
+    wordChangeBtn.style.display='none'; // 학생은 단어 변경 불가
+    submitRow.style.display='block';
+    submitStatus.textContent='📤 결과를 선생님께 전송 중...';
+    submitStatus.style.color='var(--muted)';
+    // submit to Firebase
+    const resultData={
+      studentName,
+      mode,
+      score,
+      elapsedSec,
+      tries,
+      wrongs,
+      acc,
+      grade,
+      submittedAt:new Date().toISOString()
+    };
+    submitResult(resultData).then(()=>{
+      submitStatus.textContent='✅ 선생님께 결과가 전달됐어요!';
+      submitStatus.style.color='var(--green)';
+    }).catch(()=>{
+      submitStatus.textContent='❌ 전송 실패 (인터넷 연결 확인)';
+      submitStatus.style.color='var(--red)';
+    });
+  }else{
+    nameRow.style.display='none';
+    wordChangeBtn.style.display='block';
+    submitRow.style.display='none';
+  }
+
   const ll=document.getElementById('log-list');ll.innerHTML='';
   attempts.forEach(a=>{
     const row=document.createElement('div');row.className='log-row';
@@ -1142,6 +1313,7 @@ function loadFromURL(){
     if(w.length===0) return false;
     const mode=params.get('mode')||'match';
     currentMode=mode;
+    isStudentMode=true;   // ← QR로 들어온 학생
     selectedCount=w.length;inputCount=w.length;
     document.getElementById('count-display').textContent=w.length;
     updateTimerHint(w.length);buildInputs(w.length);
@@ -1151,10 +1323,170 @@ function loadFromURL(){
   }catch(e){return false;}
 }
 
+/* ═══════════════════════════════════════
+   STUDENT / TEACHER MODE
+═══════════════════════════════════════ */
+let isStudentMode=false;   // true = came from QR
+let studentName='';
+let pendingGameMode='match';
+const FIREBASE_KEY='wordgame_firebase_url';
+
+function getFirebaseURL(){
+  return localStorage.getItem(FIREBASE_KEY)||'';
+}
+function saveFirebaseURL(){
+  const val=document.getElementById('firebase-url-input').value.trim().replace(/\/+$/,'');
+  if(!val.startsWith('https://')){alert('올바른 Firebase URL을 입력해주세요.');return;}
+  localStorage.setItem(FIREBASE_KEY,val);
+  document.getElementById('firebase-setup-panel').style.display='none';
+  document.getElementById('db-status-row').style.display='block';
+  checkFirebaseConnection();
+  refreshDashboard();
+}
+function resetFirebaseURL(){
+  localStorage.removeItem(FIREBASE_KEY);
+  document.getElementById('firebase-setup-panel').style.display='block';
+  document.getElementById('db-status-row').style.display='none';
+}
+function checkFirebaseConnection(){
+  const url=getFirebaseURL();
+  if(!url){setDBStatus('none','DB 미연결');return;}
+  setDBStatus('none','연결 확인 중...');
+  fetch(url+'/.json?shallow=true').then(r=>{
+    if(r.ok) setDBStatus('ok','Firebase 연결됨');
+    else setDBStatus('err','연결 실패 (DB 규칙 확인)');
+  }).catch(()=>setDBStatus('err','연결 실패'));
+}
+function setDBStatus(state,msg){
+  const dot=document.getElementById('db-status-dot');
+  const txt=document.getElementById('db-status-text');
+  if(!dot||!txt) return;
+  dot.className='db-status-dot '+state;
+  txt.textContent=msg;
+}
+
+/* submit result to Firebase */
+async function submitResult(data){
+  const url=getFirebaseURL();
+  if(!url) return;
+  try{
+    await fetch(url+'/results.json',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    });
+  }catch(e){console.log('Submit failed',e);}
+}
+
+/* ── Name screen ── */
+function showNameScreen(mode){
+  pendingGameMode=mode;
+  document.getElementById('name-mode-label').textContent=mode==='match'?'🃏 매칭 게임':'✏️ 스펠링 게임';
+  document.getElementById('student-name-input').value='';
+  document.getElementById('name-err').textContent='';
+  showScreen('name-screen');
+  setTimeout(()=>document.getElementById('student-name-input').focus(),300);
+}
+function confirmName(){
+  const val=document.getElementById('student-name-input').value.trim();
+  if(!val){document.getElementById('name-err').textContent='이름을 입력해주세요!';return;}
+  studentName=val;
+  currentMode=pendingGameMode;
+  if(currentMode==='match') initMatch();
+  else initSpell();
+}
+
+/* ═══════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════ */
+let dashFilter='all';
+let dashData=[];
+
+function openDashboard(){
+  const fbUrl=getFirebaseURL();
+  const setupPanel=document.getElementById('firebase-setup-panel');
+  const statusRow=document.getElementById('db-status-row');
+  if(fbUrl){
+    setupPanel.style.display='none';
+    statusRow.style.display='block';
+    document.getElementById('firebase-url-input').value=fbUrl;
+    checkFirebaseConnection();
+  }else{
+    setupPanel.style.display='block';
+    statusRow.style.display='none';
+  }
+  showScreen('dashboard-screen');
+  refreshDashboard();
+}
+
+function setDashFilter(f){
+  dashFilter=f;
+  ['all','match','spell'].forEach(k=>{
+    document.getElementById('df-'+k).classList.toggle('active',k===f);
+  });
+  renderDashboard();
+}
+
+async function refreshDashboard(){
+  const url=getFirebaseURL();
+  if(!url){renderDashboard();return;}
+  try{
+    const r=await fetch(url+'/results.json');
+    if(!r.ok){dashData=[];renderDashboard();return;}
+    const raw=await r.json();
+    if(!raw){dashData=[];renderDashboard();return;}
+    dashData=Object.entries(raw).map(([id,v])=>({id,...v}));
+    dashData.sort((a,b)=>(b.score||0)-(a.score||0));
+  }catch(e){dashData=[];}
+  renderDashboard();
+}
+
+function renderDashboard(){
+  const list=document.getElementById('dashboard-list');
+  let filtered=dashData.filter(d=>dashFilter==='all'||d.mode===dashFilter);
+  if(filtered.length===0){
+    const fbUrl=getFirebaseURL();
+    list.innerHTML=`<div class="dash-empty"><div class="dash-empty-icon">${fbUrl?'📭':'🔌'}</div>${fbUrl?'아직 제출된 결과가 없어요.':'Firebase DB를 먼저 연결해주세요.'}</div>`;
+    return;
+  }
+  list.innerHTML='';
+  filtered.forEach((d,i)=>{
+    const rank=i+1;
+    const rankClass=rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'rank-n';
+    const rankLabel=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
+    const s=d.score||0;
+    const scoreClass=s>=95?'score-s':s>=80?'score-a':s>=60?'score-b':s>=40?'score-c':'score-d';
+    const modeTag=d.mode==='match'?'<span class="mode-tag mode-match">매칭</span>':'<span class="mode-tag mode-spell">스펠링</span>';
+    const time=d.submittedAt?new Date(d.submittedAt).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):'';
+    const card=document.createElement('div');
+    card.className='student-card';
+    card.innerHTML=`
+      <div class="rank-badge ${rankClass}">${rankLabel}</div>
+      <div class="student-card-info">
+        <div class="student-card-name">${d.studentName||'익명'}</div>
+        <div class="student-card-meta">${modeTag} &nbsp;⏱ ${d.elapsedSec||0}초 &nbsp;❌ ${d.wrongs||0}번 &nbsp;${time}</div>
+      </div>
+      <div class="student-card-right">
+        <div class="score-pill ${scoreClass}">${s}점</div>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+async function clearDashboard(){
+  if(!confirm('모든 학생 결과를 삭제할까요?')) return;
+  const url=getFirebaseURL();
+  if(url){
+    try{await fetch(url+'/results.json',{method:'DELETE'});}catch(e){}
+  }
+  dashData=[];
+  renderDashboard();
+}
+
 /* ── Init ── */
 buildInputs(selectedCount);
 updateTimerHint(selectedCount);
-if(loadFromURL()) setTimeout(startGame,400);
+if(loadFromURL()) setTimeout(()=>showNameScreen(currentMode),400);
 </script>
 </body>
 </html>
