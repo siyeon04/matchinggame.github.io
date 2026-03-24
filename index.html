@@ -674,11 +674,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 <!-- QR MODAL -->
 <div class="modal-overlay" id="qr-modal">
-  <div class="modal-box">
-    <h2>📲 학생에게 공유하기</h2>
-    <p class="modal-desc">QR을 스캔하면 같은 단어로<br>게임이 바로 시작돼요!</p>
+  <div class="modal-box" style="max-width:420px;text-align:left;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <h2 style="font-size:18px;">📲 QR 공유</h2>
+      <button onclick="closeQR()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
+    </div>
     <div id="qr-not-hosted" style="display:none;">
-      <div class="host-guide">
+      <div class="host-guide" style="margin-top:12px;">
         <strong>⚠️ 웹에 올려야 QR 공유가 가능해요</strong>
         GitHub Pages로 무료 호스팅하는 방법:<br>
         1️⃣ <a href="https://github.com" target="_blank">github.com</a> 무료 계정 만들기<br>
@@ -690,11 +692,21 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <button class="btn btn-secondary" onclick="closeQR()">닫기</button>
     </div>
     <div id="qr-hosted" style="display:none;">
-      <div id="qr-container"></div>
-      <div class="qr-url-box" id="qr-url-text"></div>
-      <div class="modal-word-list" id="modal-word-list"><div class="mwl-title">📚 포함된 단어</div></div>
-      <button class="copy-btn" id="copy-btn" onclick="copyURL()">🔗 링크 복사하기</button>
-      <button class="btn btn-primary" onclick="closeQR()">확인</button>
+      <!-- 클래스 선택 목록 -->
+      <p style="font-size:13px;color:var(--muted);margin:6px 0 12px;">공유할 클래스를 선택하거나<br>현재 입력된 단어로 바로 QR을 만드세요.</p>
+      <div id="qr-class-list" style="max-height:340px;overflow-y:auto;"></div>
+      <!-- QR 생성 결과 -->
+      <div id="qr-generate-result" style="display:none;">
+        <button onclick="document.getElementById('qr-class-list').style.display='block';document.getElementById('qr-generate-result').style.display='none';"
+          style="background:none;border:none;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;padding:0;margin-bottom:12px;">← 다시 선택</button>
+        <div style="text-align:center;">
+          <div id="qr-container" style="display:inline-block;background:#fff;border-radius:12px;padding:12px;border:1.5px solid var(--border);margin-bottom:12px;"></div>
+        </div>
+        <div class="qr-url-box" id="qr-url-text"></div>
+        <div class="modal-word-list" id="modal-word-list" style="max-height:120px;"><div class="mwl-title">📚 포함된 단어</div></div>
+        <button class="copy-btn" id="copy-btn" onclick="copyURL()" style="margin-top:8px;">🔗 링크 복사하기</button>
+        <button class="btn btn-primary" onclick="closeQR()" style="margin-top:6px;">확인</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1444,25 +1456,139 @@ function clearAllHistory(){if(!confirm('모든 히스토리를 삭제할까요?'
    QR
 ═══════════════════════════════════════ */
 function openQR(){
-  const w=collectWords();if(!w) return;words=w;
   const isHosted=location.protocol==='https:'||(location.protocol==='http:'&&!location.href.startsWith('file:'));
   document.getElementById('qr-not-hosted').style.display=isHosted?'none':'block';
   document.getElementById('qr-hosted').style.display=isHosted?'block':'none';
-  if(isHosted){
-    const encoded=encodeURIComponent(JSON.stringify(w.map(x=>({k:x.kr,e:x.en}))));
-    const modeParam=currentMode;
-    const fbUrl=getFirebaseURL();
-    const fbParam=fbUrl?'&fb='+encodeURIComponent(fbUrl):'';
-    const url=location.origin+location.pathname+'?words='+encoded+'&mode='+modeParam+fbParam;
-    const qrDiv=document.getElementById('qr-container');qrDiv.innerHTML='';
-    new QRCode(qrDiv,{text:url,width:196,height:196,correctLevel:QRCode.CorrectLevel.M});
-    document.getElementById('qr-url-text').textContent=url;
-    const ml=document.getElementById('modal-word-list');
-    ml.innerHTML='<div class="mwl-title">📚 포함된 단어</div>';
-    w.forEach((x,i)=>{const d=document.createElement('div');d.className='modal-word-item';d.textContent=`${i+1}. ${x.kr} — ${x.en}`;ml.appendChild(d);});
-    const copyBtn=document.getElementById('copy-btn');copyBtn.textContent='🔗 링크 복사하기';copyBtn.classList.remove('copied');copyBtn._url=url;
-  }
   document.getElementById('qr-modal').classList.add('show');
+  if(isHosted) renderQRClassList();
+}
+
+async function renderQRClassList(){
+  const listEl=document.getElementById('qr-class-list');
+  listEl.innerHTML='<div style="text-align:center;padding:12px;color:var(--muted);font-size:13px;">불러오는 중...</div>';
+  const fbUrl=getFirebaseURL();
+  let classes={};
+  if(fbUrl){
+    classes=await fetchClasses();
+  } else {
+    try{ classes=JSON.parse(localStorage.getItem('wordgame_classes')||'{}'); }catch(e){}
+  }
+  const keys=Object.keys(classes).sort();
+  listEl.innerHTML='';
+
+  // Firebase 연결 상태 배너
+  if(!fbUrl){
+    const banner=document.createElement('div');
+    banner.style.cssText='background:var(--gold-l);border:1.5px solid rgba(240,149,42,.25);border-radius:var(--rx);padding:9px 12px;font-size:12px;color:#7a4f0a;font-weight:600;margin-bottom:10px;line-height:1.6;';
+    banner.innerHTML='⚠️ Firebase 미연결 — 저장된 클래스만 이 기기에서 사용 가능<br>직접 입력 단어 QR은 Firebase 연결 후 사용하세요.';
+    listEl.appendChild(banner);
+  }
+
+  // 현재 입력된 단어로 QR 생성 옵션
+  const directDiv=document.createElement('div');
+  directDiv.style.cssText='margin-bottom:10px;';
+  directDiv.innerHTML=`<div style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">현재 입력 단어로 QR 생성</div>`;
+  const directBtn=document.createElement('div');
+  directBtn.className='cls-card';
+  directBtn.style.marginBottom='0';
+  directBtn.innerHTML=`<div class="cls-card-name">✏️ 현재 입력된 단어 사용</div><div class="cls-card-meta">${fbUrl?'Firebase에 임시 저장 후 짧은 키 생성':'Firebase 연결 필요'}</div>`;
+  directBtn.onclick=()=>generateQRFromCurrentWords();
+  directDiv.appendChild(directBtn);
+  listEl.appendChild(directDiv);
+
+  if(keys.length>0){
+    const sep=document.createElement('div');
+    sep.style.cssText='font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:10px 0 6px;';
+    sep.textContent='저장된 클래스에서 선택';
+    listEl.appendChild(sep);
+    keys.forEach(id=>{
+      const cls=classes[id];
+      const wordCount=(cls.words||[]).filter(w=>w.kr&&w.en).length;
+      const btn=document.createElement('div');
+      btn.className='cls-card';
+      btn.style.marginBottom='7px';
+      btn.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><div class="cls-card-name">${escHtml(cls.name||id)}</div><div class="cls-card-meta">단어 ${wordCount}개</div></div>
+        <div style="font-size:11px;color:var(--accent);font-weight:800;">QR 생성 →</div></div>`;
+      btn.onclick=()=>generateQRFromClass(id,cls);
+      listEl.appendChild(btn);
+    });
+  }
+  document.getElementById('qr-generate-result').style.display='none';
+}
+
+async function generateQRFromCurrentWords(){
+  const w=collectWords();
+  if(!w){
+    closeQR();
+    return;
+  }
+  words=w;
+  const fbUrl=getFirebaseURL();
+  if(!fbUrl){
+    // Firebase 없으면 인라인 안내 표시
+    const listEl=document.getElementById('qr-class-list');
+    listEl.innerHTML=`
+      <div style="background:var(--gold-l);border:1.5px solid rgba(240,149,42,.3);border-radius:var(--rs);padding:14px 16px;font-size:13px;color:#7a4f0a;line-height:1.8;font-weight:600;">
+        <strong style="display:block;margin-bottom:6px;color:#b36c10;">⚠️ Firebase 연결이 필요해요</strong>
+        직접 입력한 단어를 QR로 공유하려면<br>
+        Firebase DB가 연결되어 있어야 해요.<br><br>
+        <strong>홈 → 학생 결과 대시보드 → Firebase URL 입력</strong><br>
+        후 다시 시도해주세요.
+      </div>
+      <button onclick="renderQRClassList()" style="margin-top:10px;width:100%;background:none;border:1.5px solid var(--soft);border-radius:var(--rx);padding:9px;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);font-family:'Nunito',sans-serif;">← 뒤로</button>`;
+    return;
+  }
+  // 로딩 표시
+  const listEl=document.getElementById('qr-class-list');
+  listEl.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px;">Firebase에 저장 중...</div>';
+  // Firebase에 임시 저장
+  const tmpId='tmp_'+Date.now();
+  const tmpData={name:'직접입력_임시', words:w, tmp:true, createdAt:new Date().toISOString()};
+  try{
+    const r=await fetch(fbUrl+'/classes/'+tmpId+'.json',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(tmpData)
+    });
+    if(!r.ok) throw new Error('저장 실패');
+    generateQRWithClassId(tmpId, currentMode, w);
+  }catch(e){
+    listEl.innerHTML=`
+      <div style="background:var(--red-l);border:1.5px solid rgba(247,86,79,.25);border-radius:var(--rs);padding:14px 16px;font-size:13px;color:#c0392b;line-height:1.8;font-weight:600;">
+        ❌ Firebase 저장 실패<br>Firebase 연결 상태를 확인해주세요.
+      </div>
+      <button onclick="renderQRClassList()" style="margin-top:10px;width:100%;background:none;border:1.5px solid var(--soft);border-radius:var(--rx);padding:9px;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);font-family:'Nunito',sans-serif;">← 뒤로</button>`;
+  }
+}
+
+function generateQRFromClass(id, cls){
+  const validWords=(cls.words||[]).filter(w=>w.kr&&w.en);
+  if(validWords.length===0){ alert('이 클래스에 단어가 없어요.'); return; }
+  words=validWords;
+  generateQRWithClassId(id, currentMode, validWords);
+}
+
+function generateQRWithClassId(clsId, mode, wordList){
+  const fbUrl=getFirebaseURL();
+  const fbParam=fbUrl?'&fb='+encodeURIComponent(fbUrl):'';
+  const url=location.origin+location.pathname+'?cls='+clsId+'&mode='+mode+fbParam;
+
+  const resultDiv=document.getElementById('qr-generate-result');
+  const qrDiv=document.getElementById('qr-container');
+  qrDiv.innerHTML='';
+  new QRCode(qrDiv,{text:url,width:200,height:200,correctLevel:QRCode.CorrectLevel.M});
+  document.getElementById('qr-url-text').textContent=url;
+
+  const ml=document.getElementById('modal-word-list');
+  ml.innerHTML='<div class="mwl-title">📚 포함된 단어 ('+wordList.length+'개)</div>';
+  wordList.slice(0,8).forEach((x,i)=>{const d=document.createElement('div');d.className='modal-word-item';d.textContent=`${i+1}. ${x.kr} — ${x.en}`;ml.appendChild(d);});
+  if(wordList.length>8){const d=document.createElement('div');d.className='modal-word-item';d.textContent=`... 외 ${wordList.length-8}개`;ml.appendChild(d);}
+
+  const copyBtn=document.getElementById('copy-btn');
+  copyBtn.textContent='🔗 링크 복사하기';copyBtn.classList.remove('copied');copyBtn._url=url;
+  resultDiv.style.display='block';
+  document.getElementById('qr-class-list').style.display='none';
 }
 function closeQR(){document.getElementById('qr-modal').classList.remove('show');}
 function copyURL(){
@@ -1476,24 +1602,75 @@ function copyURL(){
 function loadFromURL(){
   try{
     const params=new URLSearchParams(location.search);
+    const mode=params.get('mode')||'match';
+    const fbParam=params.get('fb');
+    if(fbParam){ localStorage.setItem(FIREBASE_KEY, decodeURIComponent(fbParam)); }
+
+    // 클래스 ID 방식 (짧은 URL)
+    const clsId=params.get('cls');
+    if(clsId){
+      currentMode=mode; isStudentMode=true;
+      updateSetupUI(mode);
+      // Firebase에서 클래스 단어 로드 후 게임 시작
+      loadWordsByClsId(clsId, mode);
+      return true;
+    }
+
+    // 기존 words 파라미터 방식 (하위 호환)
     const raw=params.get('words');if(!raw) return false;
     const arr=JSON.parse(decodeURIComponent(raw));
     if(!Array.isArray(arr)||arr.length===0) return false;
     const w=arr.map(x=>({kr:x.k,en:x.e})).filter(x=>x.kr&&x.en);
     if(w.length===0) return false;
-    const mode=params.get('mode')||'match';
-    currentMode=mode;
-    isStudentMode=true;
-    // Firebase URL을 QR에서 받아서 저장 (학생 기기에 Firebase URL 주입)
-    const fbParam=params.get('fb');
-    if(fbParam){ localStorage.setItem(FIREBASE_KEY, decodeURIComponent(fbParam)); }
+    currentMode=mode; isStudentMode=true;
     selectedCount=w.length;inputCount=w.length;
     document.getElementById('count-display').textContent=w.length;
     updateTimerHint(w.length);buildInputs(w.length);
     w.forEach((x,i)=>{document.getElementById('kr-'+i).value=x.kr;document.getElementById('en-'+i).value=x.en;});
-    updateSetupUI(mode);
-    words=w;return true;
+    updateSetupUI(mode); words=w; return true;
   }catch(e){return false;}
+}
+
+async function loadWordsByClsId(clsId, mode){
+  // 로딩 화면 표시
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('home-screen').classList.remove('active');
+  // 로딩 중 표시
+  const loadDiv=document.createElement('div');
+  loadDiv.id='loading-screen';
+  loadDiv.style.cssText='position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--muted);background:var(--bg);z-index:999;';
+  loadDiv.textContent='단어 불러오는 중...';
+  document.body.appendChild(loadDiv);
+
+  try{
+    const fbUrl=getFirebaseURL();
+    let cls=null;
+    if(fbUrl){
+      const r=await fetch(fbUrl+'/classes/'+clsId+'.json');
+      if(r.ok) cls=await r.json();
+    }
+    if(!cls||!cls.words){ throw new Error('클래스 없음'); }
+    const w=cls.words.filter(x=>x.kr&&x.en);
+    if(w.length===0) throw new Error('단어 없음');
+
+    words=w;
+    selectedCount=w.length; inputCount=w.length;
+    document.getElementById('count-display').textContent=w.length;
+    updateTimerHint(w.length); buildInputs(w.length);
+    w.forEach((x,i)=>{
+      const kr=document.getElementById('kr-'+i), en=document.getElementById('en-'+i);
+      if(kr&&en){kr.value=x.kr; en.value=x.en;}
+    });
+    document.getElementById('loading-screen').remove();
+    showNameScreen(mode);
+  }catch(e){
+    document.getElementById('loading-screen').remove();
+    document.getElementById('login-screen').style.display='none';
+    const errDiv=document.createElement('div');
+    errDiv.style.cssText='position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--bg);z-index:999;';
+    errDiv.innerHTML='<div style="font-size:40px">😢</div><div style="font-size:16px;font-weight:700;color:var(--muted);">단어를 불러올 수 없어요.<br>선생님께 문의해주세요.</div>';
+    document.body.appendChild(errDiv);
+  }
 }
 
 /* ═══════════════════════════════════════
