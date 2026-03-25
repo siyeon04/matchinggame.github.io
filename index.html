@@ -1495,11 +1495,10 @@ function openQR(){
   document.getElementById('qr-not-hosted').style.display=isHosted?'none':'block';
   document.getElementById('qr-hosted').style.display=isHosted?'block':'none';
   if(isHosted){
+    // 항상 목록부터 보여줌 — QR 생성은 사용자가 직접 선택
     document.getElementById('qr-class-list').style.display='block';
     document.getElementById('qr-generate-result').style.display='none';
-    const w=collectWords(true);
-    if(w&&w.length>0){words=w;generateQRFromCurrentWords();}
-    else renderQRClassList();
+    renderQRClassList();
   }
   document.getElementById('qr-modal').classList.add('show');
 }
