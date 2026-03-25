@@ -475,7 +475,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <input class="name-input" id="student-name-input" placeholder="예) 홍길동" maxlength="12" autocomplete="off"
         onkeydown="if(event.key==='Enter') confirmName()"/>
       <div class="name-err" id="name-err"></div>
-      <button class="btn btn-primary" onclick="confirmName()">🎮 게임 시작!</button>
+      <button class="btn btn-primary" onclick="confirmName()">START</button>
     </div>
   </div>
 </div>
@@ -1989,10 +1989,6 @@ function confirmName(){
   if(!val){document.getElementById('name-err').textContent='이름을 입력해주세요!';return;}
   studentName=val;
   currentMode=pendingGameMode;
-  // 준비 화면으로 이동
-  document.getElementById('ready-student-name').textContent=val+'님, 준비됐나요?';
-  document.getElementById('ready-mode-label').textContent=
-    currentMode==='match'?'🃏 매칭 게임':currentMode==='type'?'⌨️ 타이핑 게임':'✏️ 스펠링 게임';
   showScreen('ready-screen');
 }
 
