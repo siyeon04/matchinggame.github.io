@@ -352,6 +352,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .setup-logo-text.type-color{color:#0891b2;}
 .btn-type{background:#0891b2;color:#fff;width:100%;box-shadow:0 4px 18px rgba(8,145,178,.35);}
 .btn-type:hover{background:#0e7490;transform:translateY(-1px);}
+
+@keyframes countPop{0%{transform:scale(1.6);opacity:0}60%{transform:scale(.9)}100%{transform:scale(1);opacity:1}}
 </style>
 </head>
 <body>
@@ -475,7 +477,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <input class="name-input" id="student-name-input" placeholder="예) 홍길동" maxlength="12" autocomplete="off"
         onkeydown="if(event.key==='Enter') confirmName()"/>
       <div class="name-err" id="name-err"></div>
-      <button class="btn btn-primary" onclick="confirmName()">START</button>
+      <button class="btn btn-primary" onclick="confirmName()" style="font-size:17px;">확인 →</button>
     </div>
   </div>
 </div>
@@ -614,8 +616,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div><div class="col-header">🇰🇷 한국어</div><div class="card-list" id="col-korean"></div></div>
     <div><div class="col-header">🇺🇸 English</div><div class="card-list" id="col-english"></div></div>
   </div>
-  <div class="game-btns">
-    <button class="btn btn-secondary" onclick="backToSetupFrom('match')">← 처음으로</button>
+  <div class="game-btns" id="match-game-btns">
+    <button class="btn btn-secondary" id="match-back-btn" onclick="backToSetupFrom('match')">← 처음으로</button>
     <button class="btn btn-secondary" onclick="restartMatch()">↺ 다시 시작</button>
   </div>
 </div>
@@ -688,7 +690,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="type-hint" id="type-hint"></div>
 
   <div class="game-btns" style="margin-top:20px;">
-    <button class="btn btn-secondary" onclick="backToSetupFrom('type')">← 처음으로</button>
+    <button class="btn btn-secondary" id="type-back-btn" onclick="backToSetupFrom('type')">← 처음으로</button>
     <button class="btn btn-secondary" onclick="restartType()">↺ 다시 시작</button>
   </div>
 </div>
@@ -726,6 +728,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </div>
 </div>
 
+<!-- COUNTDOWN OVERLAY -->
+<div id="countdown-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,29,46,.7);backdrop-filter:blur(6px);z-index:300;align-items:center;justify-content:center;">
+  <div id="countdown-num" style="font-size:120px;font-weight:900;color:#fff;font-family:'Nunito',sans-serif;animation:countPop .4s ease;line-height:1;text-shadow:0 4px 32px rgba(79,110,247,.5);"></div>
+</div>
 <!-- TIMEOUT -->
 <div class="timeout-overlay" id="timeout-overlay">
   <div class="timeout-box">
@@ -1209,6 +1215,9 @@ function initMatch(){
   sEn.forEach(w=>{const el=mkCard(w.en);el.dataset.idx=w.idx;el.onclick=()=>mSelectEng(el,w.idx);colEn.appendChild(el);});
   document.getElementById('timeout-overlay').classList.remove('show');
   showScreen('match-game-screen');
+  // 학생 모드: 처음으로 버튼 숨김
+  const mbb=document.getElementById('match-back-btn');
+  if(mbb) mbb.style.display=isStudentMode?'none':'block';
   stopBGM(); sfxGameStart(); setTimeout(startBGM,600);
   timerInterval=setInterval(()=>{
     timeLeft--;elapsedSec=Math.floor((Date.now()-startTs)/1000);
@@ -1274,6 +1283,9 @@ function initSpell(){
   row.innerHTML=spQuestions.map((_,i)=>`<div class="spell-score-dot" id="sdot-${i}"></div>`).join('');
   document.getElementById('timeout-overlay').classList.remove('show');
   showScreen('spell-game-screen');
+  // 학생 모드: 처음으로 버튼 숨김
+  const sbb=document.getElementById('spell-back-btn');
+  if(sbb) sbb.style.display=isStudentMode?'none':'block';
   renderSpellQ();
   updateTimerUI('spell');
   stopBGM(); sfxGameStart(); setTimeout(startBGM,600);
@@ -1360,6 +1372,9 @@ function initType(){
 
   document.getElementById('timeout-overlay').classList.remove('show');
   showScreen('type-game-screen');
+  // 학생 모드: 처음으로 버튼 숨김
+  const tbb=document.getElementById('type-back-btn');
+  if(tbb) tbb.style.display=isStudentMode?'none':'block';
   renderTypeQ();
   updateTimerUI('type');
   stopBGM(); sfxGameStart(); setTimeout(startBGM,600);
@@ -1549,6 +1564,8 @@ function showResult(mode){
     nameSpan.textContent=studentName;
     wordChangeBtn.style.display='none'; // 학생은 단어 변경 불가
     document.getElementById('result-home-btn').style.display='none'; // 학생은 홈 버튼 없음
+    retryBtn.textContent='↺ 다시 도전';
+    retryBtn.style.marginTop='8px';
     submitRow.style.display='block';
     submitStatus.textContent='📤 결과를 선생님께 전송 중...';
     submitStatus.style.color='var(--muted)';
@@ -1598,9 +1615,52 @@ function showResult(mode){
 }
 
 function retryResult(){
-  if(lastGameMode==='match') restartMatch();
-  else if(lastGameMode==='type') restartType();
-  else restartSpell();
+  if(isStudentMode){
+    // 학생: 카운트다운 후 바로 게임 시작
+    startCountdown(()=>{
+      if(lastGameMode==='match') restartMatch();
+      else if(lastGameMode==='type') restartType();
+      else restartSpell();
+    });
+  } else {
+    if(lastGameMode==='match') restartMatch();
+    else if(lastGameMode==='type') restartType();
+    else restartSpell();
+  }
+}
+
+function startCountdown(callback){
+  const overlay=document.getElementById('countdown-overlay');
+  const numEl=document.getElementById('countdown-num');
+  overlay.style.display='flex';
+  let count=3;
+
+  function tick(){
+    numEl.style.animation='none';
+    void numEl.offsetWidth; // reflow
+    numEl.style.animation='countPop .4s ease';
+
+    if(count>0){
+      numEl.textContent=count;
+      // 카운트 비프음
+      if(soundEnabled){
+        const freqs=[523,659,784];
+        playTone(freqs[3-count]||523, 0.15,'sine',0.2);
+      }
+      count--;
+      setTimeout(tick,900);
+    } else {
+      numEl.textContent='GO!';
+      numEl.style.color='#22c16b';
+      if(soundEnabled) playTone(1047,0.3,'sine',0.25);
+      setTimeout(()=>{
+        overlay.style.display='none';
+        numEl.style.color='#fff';
+        callback();
+      },700);
+    }
+  }
+  tick();
 }
 
 /* ═══════════════════════════════════════
