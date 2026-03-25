@@ -781,7 +781,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div id="qr-class-list" style="max-height:340px;overflow-y:auto;"></div>
       <!-- QR 생성 결과 -->
       <div id="qr-generate-result" style="display:none;">
-        <button onclick="document.getElementById('qr-class-list').style.display='block';document.getElementById('qr-generate-result').style.display='none';"
+        <button onclick="document.getElementById('qr-class-list').style.display='block';document.getElementById('qr-generate-result').style.display='none';renderQRClassList();"
           style="background:none;border:none;color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;padding:0;margin-bottom:12px;">← 다시 선택</button>
         <div style="text-align:center;">
           <div id="qr-container" style="display:inline-block;background:#fff;border-radius:12px;padding:12px;border:1.5px solid var(--border);margin-bottom:12px;"></div>
@@ -1160,15 +1160,18 @@ function loadSample(){
   document.getElementById('err-msg').textContent='';
 }
 
-function collectWords(){
+function collectWords(silent=false){
   const arr=[];
   for(let i=0;i<inputCount;i++){
     const kr=(document.getElementById('kr-'+i)||{}).value.trim();
     const en=(document.getElementById('en-'+i)||{}).value.trim();
-    if(!kr||!en){document.getElementById('err-msg').textContent=`${i+1}번 단어를 모두 입력해주세요.`;return null;}
+    if(!kr||!en){
+      if(!silent) document.getElementById('err-msg').textContent=`${i+1}번 단어를 모두 입력해주세요.`;
+      return null;
+    }
     arr.push({kr,en});
   }
-  document.getElementById('err-msg').textContent='';
+  if(!silent) document.getElementById('err-msg').textContent='';
   return arr;
 }
 
@@ -1186,10 +1189,19 @@ function startGame(){
 }
 
 function backToSetupFrom(from){
+  if(isStudentMode) return; // 학생은 setup 화면으로 못 돌아감
   clearInterval(timerInterval);
   stopBGM();
   document.getElementById('timeout-overlay').classList.remove('show');
   showScreen('setup-screen');
+}
+
+function applyStudentUI(){
+  // 학생 모드일 때 처음으로 버튼 숨김 - 모든 게임 화면 한 번에 처리
+  ['match-back-btn','spell-back-btn','type-back-btn'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=isStudentMode?'none':'block';
+  });
 }
 
 /* ═══════════════════════════════════════
@@ -1283,9 +1295,7 @@ function initSpell(){
   row.innerHTML=spQuestions.map((_,i)=>`<div class="spell-score-dot" id="sdot-${i}"></div>`).join('');
   document.getElementById('timeout-overlay').classList.remove('show');
   showScreen('spell-game-screen');
-  // 학생 모드: 처음으로 버튼 숨김
-  const sbb=document.getElementById('spell-back-btn');
-  if(sbb) sbb.style.display=isStudentMode?'none':'block';
+  applyStudentUI();
   renderSpellQ();
   updateTimerUI('spell');
   stopBGM(); sfxGameStart(); setTimeout(startBGM,600);
@@ -1372,9 +1382,7 @@ function initType(){
 
   document.getElementById('timeout-overlay').classList.remove('show');
   showScreen('type-game-screen');
-  // 학생 모드: 처음으로 버튼 숨김
-  const tbb=document.getElementById('type-back-btn');
-  if(tbb) tbb.style.display=isStudentMode?'none':'block';
+  applyStudentUI();
   renderTypeQ();
   updateTimerUI('type');
   stopBGM(); sfxGameStart(); setTimeout(startBGM,600);
@@ -1717,8 +1725,24 @@ function openQR(){
   const isHosted=location.protocol==='https:'||(location.protocol==='http:'&&!location.href.startsWith('file:'));
   document.getElementById('qr-not-hosted').style.display=isHosted?'none':'block';
   document.getElementById('qr-hosted').style.display=isHosted?'block':'none';
+
+  if(isHosted){
+    // 매번 열 때 초기화
+    document.getElementById('qr-class-list').style.display='block';
+    document.getElementById('qr-generate-result').style.display='none';
+
+    // 단어가 이미 입력돼 있으면 바로 QR 생성
+    const w=collectWords(true);
+    if(w && w.length>0){
+      words=w;
+      // 현재 입력된 단어로 바로 QR 생성 시도
+      generateQRFromCurrentWords();
+      document.getElementById('qr-modal').classList.add('show');
+      return;
+    }
+    renderQRClassList();
+  }
   document.getElementById('qr-modal').classList.add('show');
-  if(isHosted) renderQRClassList();
 }
 
 async function renderQRClassList(){
@@ -1799,7 +1823,8 @@ async function generateQRFromCurrentWords(){
   }
   // 로딩 표시
   const listEl=document.getElementById('qr-class-list');
-  listEl.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px;">Firebase에 저장 중...</div>';
+  listEl.style.display='block';
+  listEl.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px;">⏳ Firebase에 저장 중...</div>';
   // Firebase에 임시 저장
   const tmpId='tmp_'+Date.now();
   const tmpData={name:'직접입력_임시', words:w, tmp:true, createdAt:new Date().toISOString()};
@@ -1832,7 +1857,11 @@ function generateQRWithClassId(clsId, mode, wordList){
   const fbParam=fbUrl?'&fb='+encodeURIComponent(fbUrl):'';
   const url=location.origin+location.pathname+'?cls='+clsId+'&mode='+mode+fbParam;
 
+  // 목록 숨기고 결과 표시
+  document.getElementById('qr-class-list').style.display='none';
   const resultDiv=document.getElementById('qr-generate-result');
+  resultDiv.style.display='block';
+
   const qrDiv=document.getElementById('qr-container');
   qrDiv.innerHTML='';
   new QRCode(qrDiv,{text:url,width:200,height:200,correctLevel:QRCode.CorrectLevel.M});
@@ -1845,8 +1874,6 @@ function generateQRWithClassId(clsId, mode, wordList){
 
   const copyBtn=document.getElementById('copy-btn');
   copyBtn.textContent='🔗 링크 복사하기';copyBtn.classList.remove('copied');copyBtn._url=url;
-  resultDiv.style.display='block';
-  document.getElementById('qr-class-list').style.display='none';
 }
 function closeQR(){document.getElementById('qr-modal').classList.remove('show');}
 function copyURL(){
