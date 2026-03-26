@@ -336,6 +336,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cls-load-btn:hover{background:#1aaa5a;transform:translateY(-1px);}
 
 /* detail modal */
+.dash-filter-btn.active-sort{background:var(--purple);color:#fff;border-color:var(--purple);}
 .detail-modal-box{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:24px 20px;text-align:left;max-width:460px;width:94%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(79,110,247,.18);animation:popUp .25s ease;}
 </style>
 </head>
@@ -479,6 +480,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <button class="dash-filter-btn active" id="df-all" onclick="setDashFilter('all')">전체</button>
     <button class="dash-filter-btn" id="df-match" onclick="setDashFilter('match')">🃏 매칭</button>
     <button class="dash-filter-btn" id="df-spell" onclick="setDashFilter('spell')">✏️ 스펠링</button>
+    <div style="width:1px;background:var(--soft);margin:0 4px;align-self:stretch;"></div>
+    <button class="dash-filter-btn active-sort" id="ds-score" onclick="setDashSort('score')">🏆 점수순</button>
+    <button class="dash-filter-btn" id="ds-time" onclick="setDashSort('time')">🕐 시간순</button>
     <button class="clear-dash-btn" onclick="clearDashboard()" style="margin-left:auto;">전체 삭제</button>
   </div>
   <div id="dashboard-list"><div class="dash-empty"><div class="dash-empty-icon">📭</div>아직 제출된 결과가 없어요.</div></div>
@@ -1294,7 +1298,7 @@ async function submitResult(data){
 /* ═══════════════════════════
    DASHBOARD
 ═══════════════════════════ */
-let dashFilter='all',dashData=[];
+let dashFilter='all',dashData=[],dashSort='score';
 function openDashboard(){
   const fbUrl=getFirebaseURL();
   document.getElementById('firebase-setup-panel').style.display=fbUrl?'none':'block';
@@ -1307,18 +1311,33 @@ function setDashFilter(f){
   ['all','match','spell'].forEach(k=>document.getElementById('df-'+k).classList.toggle('active',k===f));
   renderDashboard();
 }
+function setDashSort(s){
+  dashSort=s;
+  ['score','time'].forEach(k=>{
+    const el=document.getElementById('ds-'+k);
+    if(!el)return;
+    el.classList.toggle('active-sort',k===s);
+    el.classList.toggle('active',false);
+  });
+  renderDashboard();
+}
 async function refreshDashboard(){
   const fbResults=await fetchFromFirebase();
   if(fbResults!==null){dashData=fbResults;setDBStatus('ok',`Firebase 연결됨 · ${dashData.length}명`);}
   else dashData=getLocalResults();
-  dashData.sort((a,b)=>(b.score||0)!==(a.score||0)?(b.score||0)-(a.score||0):(a.elapsedSec||0)-(b.elapsedSec||0));
   renderDashboard();
 }
 function fmtTime(isoStr){if(!isoStr)return'';try{return new Date(isoStr).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}catch(e){return'';}}
 function fmtDate(isoStr){if(!isoStr)return'';try{return new Date(isoStr).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'});}catch(e){return'';}}
 function renderDashboard(){
   const list=document.getElementById('dashboard-list');
-  const filtered=dashData.filter(d=>dashFilter==='all'||d.mode===dashFilter);
+  let filtered=dashData.filter(d=>dashFilter==='all'||d.mode===dashFilter);
+  if(dashSort==='score'){
+    filtered.sort((a,b)=>(b.score||0)!==(a.score||0)?(b.score||0)-(a.score||0):(a.elapsedSec||0)-(b.elapsedSec||0));
+  }else{
+    // 시간순: 나중에 시작한 사람이 위 (최신순), 먼저 한 사람이 아래
+    filtered.sort((a,b)=>new Date(b.startedAt||0)-new Date(a.startedAt||0));
+  }
   if(filtered.length===0){const fbUrl=getFirebaseURL();list.innerHTML=`<div class="dash-empty"><div class="dash-empty-icon">${fbUrl?'📭':'🔌'}</div>${fbUrl?'아직 제출된 결과가 없어요.':'Firebase DB를 먼저 연결해주세요.'}</div>`;return;}
   list.innerHTML='';
   filtered.forEach((d,i)=>{
