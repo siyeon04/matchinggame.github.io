@@ -1348,7 +1348,9 @@ function renderDashboard(){
     const scoreClass=s>=95?'score-s':s>=80?'score-a':s>=60?'score-b':s>=40?'score-c':'score-d';
     const modeTag=d.mode==='match'?'<span class="mode-tag mode-match">매칭</span>':'<span class="mode-tag mode-spell">스펠링</span>';
     const card=document.createElement('div');card.className='student-card';
-    card.innerHTML=`<div class="rank-badge ${rankClass}">${rankLabel}</div><div class="student-card-info"><div class="student-card-name">${escHtml(d.studentName||'익명')}</div><div class="student-card-meta">${modeTag} &nbsp;⏱ <strong>${d.elapsedSec||0}초</strong> &nbsp;❌ ${d.wrongs||0}번</div><div class="student-card-meta" style="margin-top:2px;font-size:10px;">📅 ${fmtDate(d.startedAt)||'?'} &nbsp;🕐 ${fmtTime(d.startedAt)||'?'} → ${fmtTime(d.submittedAt)||'?'}</div></div><div class="student-card-right"><div class="score-pill ${scoreClass}">${s}점</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:700;">${d.grade||''}</div><div style="font-size:10px;color:var(--light);margin-top:4px;">📋 상세보기</div></div>`;
+    const delBtnId='del_'+i;
+    card.style.position='relative';
+    card.innerHTML=`<div class="rank-badge ${rankClass}">${rankLabel}</div><div class="student-card-info"><div class="student-card-name">${escHtml(d.studentName||'익명')}</div><div class="student-card-meta">${modeTag} &nbsp;⏱ <strong>${d.elapsedSec||0}초</strong> &nbsp;❌ ${d.wrongs||0}번</div><div class="student-card-meta" style="margin-top:2px;font-size:10px;">📅 ${fmtDate(d.startedAt)||'?'} &nbsp;🕐 ${fmtTime(d.startedAt)||'?'} → ${fmtTime(d.submittedAt)||'?'}</div></div><div class="student-card-right"><div class="score-pill ${scoreClass}">${s}점</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:700;">${d.grade||''}</div><div style="font-size:10px;color:var(--light);margin-top:4px;">📋 상세보기</div></div><button id="${delBtnId}" title="삭제" style="position:absolute;top:6px;right:6px;background:none;border:none;cursor:pointer;color:var(--light);font-size:15px;padding:2px 5px;border-radius:4px;line-height:1;transition:all .15s;" onmouseenter="this.style.color='var(--red)';this.style.background='var(--red-l)'" onmouseleave="this.style.color='var(--light)';this.style.background='none'" onclick="event.stopPropagation();deleteOneResult(${i},this.closest('.student-card'))">✕</button>`;
     card.addEventListener('click',()=>openDetail(d));
     list.appendChild(card);
   });
@@ -1372,6 +1374,33 @@ async function clearDashboard(){
   const url=getFirebaseURL();
   if(url){try{await fetch(url+'/results.json',{method:'DELETE'});}catch(e){}}
   dashData=[];renderDashboard();
+}
+async function deleteOneResult(idx,cardEl){
+  // filtered 배열 기준 idx → dashData에서 실제 항목 찾기
+  const filtered=dashData.filter(d=>dashFilter==='all'||d.mode===dashFilter);
+  if(dashSort==='score'){
+    filtered.sort((a,b)=>(b.score||0)!==(a.score||0)?(b.score||0)-(a.score||0):(a.elapsedSec||0)-(b.elapsedSec||0));
+  }else{
+    filtered.sort((a,b)=>new Date(b.startedAt||0)-new Date(a.startedAt||0));
+  }
+  const target=filtered[idx];
+  if(!target)return;
+  // dashData에서 제거
+  const di=dashData.indexOf(target);
+  if(di>-1)dashData.splice(di,1);
+  // localStorage 업데이트
+  const local=getLocalResults();
+  const li=local.findIndex(r=>r.submittedAt===target.submittedAt&&r.studentName===target.studentName);
+  if(li>-1){local.splice(li,1);try{localStorage.setItem(LOCAL_RESULTS_KEY,JSON.stringify(local));}catch(e){}}
+  // Firebase에서도 삭제 (id가 있는 경우)
+  if(target.id){
+    const url=getFirebaseURL();
+    if(url){try{await fetch(url+'/results/'+target.id+'.json',{method:'DELETE'});}catch(e){}}
+  }
+  // 카드 애니메이션 후 제거
+  cardEl.style.transition='opacity .2s,transform .2s';
+  cardEl.style.opacity='0';cardEl.style.transform='translateX(20px)';
+  setTimeout(()=>renderDashboard(),220);
 }
 
 /* ═══════════════════════════
