@@ -1287,7 +1287,14 @@ async function pushToFirebase(data){
 }
 async function fetchFromFirebase(){
   const url=getFirebaseURL();if(!url)return null;
-  try{const r=await fetch(url+'/results.json');if(!r.ok)return null;const raw=await r.json();if(!raw)return[];return Object.values(raw);}catch(e){return null;}
+  try{
+    const r=await fetch(url+'/results.json');
+    if(!r.ok)return null;
+    const raw=await r.json();
+    if(!raw)return[];
+    // Firebase key를 _fid로 함께 저장
+    return Object.entries(raw).map(([key,val])=>({...val,_fid:key}));
+  }catch(e){return null;}
 }
 async function submitResult(data){
   addLocalResult(data);
@@ -1393,10 +1400,10 @@ async function deleteOneResult(idx,cardEl){
   const local=getLocalResults();
   const li=local.findIndex(r=>r.submittedAt===target.submittedAt&&r.studentName===target.studentName);
   if(li>-1){local.splice(li,1);try{localStorage.setItem(LOCAL_RESULTS_KEY,JSON.stringify(local));}catch(e){}}
-  // Firebase에서도 삭제 (id가 있는 경우)
-  if(target.id){
+  // Firebase에서도 삭제 (_fid가 있는 경우)
+  if(target._fid){
     const url=getFirebaseURL();
-    if(url){try{await fetch(url+'/results/'+target.id+'.json',{method:'DELETE'});}catch(e){}}
+    if(url){try{await fetch(url+'/results/'+target._fid+'.json',{method:'DELETE'});}catch(e){}}
   }
   // 카드 애니메이션 후 제거
   cardEl.style.transition='opacity .2s,transform .2s';
