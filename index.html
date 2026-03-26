@@ -1315,6 +1315,7 @@ async function refreshDashboard(){
   renderDashboard();
 }
 function fmtTime(isoStr){if(!isoStr)return'';try{return new Date(isoStr).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}catch(e){return'';}}
+function fmtDate(isoStr){if(!isoStr)return'';try{return new Date(isoStr).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'});}catch(e){return'';}}
 function renderDashboard(){
   const list=document.getElementById('dashboard-list');
   const filtered=dashData.filter(d=>dashFilter==='all'||d.mode===dashFilter);
@@ -1328,7 +1329,7 @@ function renderDashboard(){
     const scoreClass=s>=95?'score-s':s>=80?'score-a':s>=60?'score-b':s>=40?'score-c':'score-d';
     const modeTag=d.mode==='match'?'<span class="mode-tag mode-match">매칭</span>':'<span class="mode-tag mode-spell">스펠링</span>';
     const card=document.createElement('div');card.className='student-card';
-    card.innerHTML=`<div class="rank-badge ${rankClass}">${rankLabel}</div><div class="student-card-info"><div class="student-card-name">${escHtml(d.studentName||'익명')}</div><div class="student-card-meta">${modeTag} &nbsp;⏱ <strong>${d.elapsedSec||0}초</strong> &nbsp;❌ ${d.wrongs||0}번</div><div class="student-card-meta" style="margin-top:2px;font-size:10px;">🕐 시작 ${fmtTime(d.startedAt)||'?'} → 제출 ${fmtTime(d.submittedAt)||'?'}</div></div><div class="student-card-right"><div class="score-pill ${scoreClass}">${s}점</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:700;">${d.grade||''}</div><div style="font-size:10px;color:var(--light);margin-top:4px;">📋 상세보기</div></div>`;
+    card.innerHTML=`<div class="rank-badge ${rankClass}">${rankLabel}</div><div class="student-card-info"><div class="student-card-name">${escHtml(d.studentName||'익명')}</div><div class="student-card-meta">${modeTag} &nbsp;⏱ <strong>${d.elapsedSec||0}초</strong> &nbsp;❌ ${d.wrongs||0}번</div><div class="student-card-meta" style="margin-top:2px;font-size:10px;">📅 ${fmtDate(d.startedAt)||'?'} &nbsp;🕐 ${fmtTime(d.startedAt)||'?'} → ${fmtTime(d.submittedAt)||'?'}</div></div><div class="student-card-right"><div class="score-pill ${scoreClass}">${s}점</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:700;">${d.grade||''}</div><div style="font-size:10px;color:var(--light);margin-top:4px;">📋 상세보기</div></div>`;
     card.addEventListener('click',()=>openDetail(d));
     list.appendChild(card);
   });
@@ -1343,7 +1344,7 @@ function openDetail(d){
   if(atts.length===0){rows=`<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">상세 기록 없음 (구버전 데이터)</div>`;}
   else if(d.mode==='match'){rows=atts.map(a=>`<div class="log-row"><span style="flex:1;">${escHtml(a.kr)} — <strong>${escHtml(a.en)}</strong></span><span class="${a.ok?'log-ok':'log-fail'}">${a.ok?'✓':'✗'}</span></div>`).join('');}
   else{rows=atts.map(a=>`<div class="log-row" style="flex-direction:column;align-items:flex-start;gap:2px;"><div style="display:flex;width:100%;justify-content:space-between;"><strong>${escHtml(a.kr)}</strong><span class="${a.ok?'log-ok':'log-fail'}">${a.ok?'✓':'✗'}</span></div><div style="font-size:12px;">선택: <span style="color:${a.ok?'var(--green)':'var(--red)'};">${escHtml(a.chosen)}</span>${a.ok?'':'&nbsp;&nbsp;정답: <span style="color:var(--green);font-weight:800;">'+escHtml(a.correct)+'</span>'}</div></div>`).join('');}
-  document.getElementById('detail-modal-body').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;"><span class="score-pill ${scoreClass}">${s}점 (${d.grade||''})</span><span class="mode-tag ${d.mode==='match'?'mode-match':'mode-spell'}">${modeLabel}</span><span style="font-size:12px;color:var(--muted);font-weight:600;align-self:center;">⏱ ${d.elapsedSec||0}초 &nbsp;❌ ${d.wrongs||0}번</span></div><div style="font-size:11px;color:var(--light);margin-bottom:12px;font-weight:600;">🕐 시작 ${fmtTime(d.startedAt)||'?'} → 제출 ${fmtTime(d.submittedAt)||'?'}</div><div class="log-panel" style="margin:0;max-height:360px;overflow-y:auto;"><div class="log-title">${atts.length}개 문제 기록</div>${rows}</div>`;
+  document.getElementById('detail-modal-body').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;"><span class="score-pill ${scoreClass}">${s}점 (${d.grade||''})</span><span class="mode-tag ${d.mode==='match'?'mode-match':'mode-spell'}">${modeLabel}</span><span style="font-size:12px;color:var(--muted);font-weight:600;align-self:center;">⏱ ${d.elapsedSec||0}초 &nbsp;❌ ${d.wrongs||0}번</span></div><div style="font-size:11px;color:var(--light);margin-bottom:12px;font-weight:600;">📅 ${fmtDate(d.startedAt)||'?'} &nbsp;🕐 시작 ${fmtTime(d.startedAt)||'?'} → 제출 ${fmtTime(d.submittedAt)||'?'}</div><div class="log-panel" style="margin:0;max-height:360px;overflow-y:auto;"><div class="log-title">${atts.length}개 문제 기록</div>${rows}</div>`;
   document.getElementById('detail-modal').classList.add('show');
 }
 async function clearDashboard(){
