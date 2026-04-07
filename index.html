@@ -1614,7 +1614,9 @@ function generateQRFromClass(id,cls){
 function generateQRWithClassId(clsId,mode,wordList){
   const fbUrl=getFirebaseURL();
   const fbParam=fbUrl?'&fb='+encodeURIComponent(fbUrl):'';
-  const url=location.origin+location.pathname+'?cls='+clsId+'&mode='+mode+fbParam;
+  const spw=parseInt(document.getElementById('sec-per-word')?.value||3);
+  const alpha=parseInt(document.getElementById('alpha-sec')?.value||5);
+  const url=location.origin+location.pathname+'?cls='+clsId+'&mode='+mode+'&spw='+spw+'&alpha='+alpha+fbParam;
   document.getElementById('qr-class-list').style.display='none';
   document.getElementById('qr-generate-result').style.display='block';
   const qrDiv=document.getElementById('qr-container');qrDiv.innerHTML='';
@@ -1636,6 +1638,11 @@ function loadFromURL(){
     const mode=params.get('mode')||'match';
     const fbParam=params.get('fb');
     if(fbParam)localStorage.setItem(FIREBASE_KEY,decodeURIComponent(fbParam));
+    // 시간 설정 파라미터 적용
+    const spwParam=params.get('spw');
+    const alphaParam=params.get('alpha');
+    if(spwParam){const el=document.getElementById('sec-per-word');if(el){el.value=spwParam;document.getElementById('sec-per-word-val').textContent=spwParam+'초';}}
+    if(alphaParam){const el=document.getElementById('alpha-sec');if(el){el.value=alphaParam;document.getElementById('alpha-sec-val').textContent=alphaParam+'초';}}
     const clsId=params.get('cls');
     if(clsId){currentMode=mode;isStudentMode=true;updateSetupUI(mode);loadWordsByClsId(clsId,mode);return true;}
     const raw=params.get('words');if(!raw)return false;
