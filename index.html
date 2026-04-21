@@ -485,6 +485,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <button class="dash-filter-btn" id="ds-time" onclick="setDashSort('time')">🕐 시간순</button>
     <button class="clear-dash-btn" onclick="clearDashboard()" style="margin-left:auto;">전체 삭제</button>
   </div>
+  <div id="dash-class-filters" class="dash-controls" style="display:none;margin-top:-6px;padding-top:6px;border-top:1px solid var(--soft);"></div>
   <div id="dashboard-list"><div class="dash-empty"><div class="dash-empty-icon">📭</div>아직 제출된 결과가 없어요.</div></div>
   <div style="margin-top:16px;"><button class="btn btn-secondary" onclick="refreshDashboard()">🔄 새로고침</button></div>
 </div>
@@ -784,6 +785,7 @@ let lastGameMode='match';
 let isStudentMode=false;
 let studentName='';
 let pendingGameMode='match';
+let studentClassName='';
 
 /* ═══════════════════════════
    LOGIN
@@ -1070,12 +1072,34 @@ function showMatchCombo(n){
 ═══════════════════════════ */
 let spQuestions=[],spIdx=0,spScore=0,spWrongs=0,spAnswered=false,spAttempts=[];
 function makeDistractors(correct,allWords,count=3){
-  const pool=allWords.filter(w=>w.en!==correct).map(w=>w.en);
-  const typos=generateTypos(correct);
-  const combined=shuffle([...pool,...typos]);
-  const seen=new Set([correct]);const result=[];
-  for(const w of combined){if(!seen.has(w)){seen.add(w);result.push(w);}if(result.length>=count)break;}
-  while(result.length<count){const t=randomTypo(correct);if(!seen.has(t)){seen.add(t);result.push(t);}}
+  const seen=new Set([correct.toLowerCase()]);
+  const result=[];
+
+  // 1. 다른 단어 리스트에서 먼저 채우기
+  const pool=shuffle(allWords.filter(w=>w.en.toLowerCase()!==correct.toLowerCase()).map(w=>w.en));
+  for(const w of pool){
+    if(!seen.has(w.toLowerCase())){seen.add(w.toLowerCase());result.push(w);}
+    if(result.length>=count)break;
+  }
+
+  // 2. 부족하면 오타로 채우기
+  if(result.length<count){
+    const typos=shuffle([...generateTypos(correct)]);
+    for(const t of typos){
+      if(!t||t.length<1)continue;
+      if(!seen.has(t.toLowerCase())){seen.add(t.toLowerCase());result.push(t);}
+      if(result.length>=count)break;
+    }
+  }
+
+  // 3. 그래도 부족하면 숫자 붙여서 채우기 (극단적 fallback)
+  let safety=0;
+  while(result.length<count&&safety<20){
+    safety++;
+    const t=correct.slice(0,-1)+(safety);
+    if(!seen.has(t.toLowerCase())){seen.add(t.toLowerCase());result.push(t);}
+  }
+
   return result.slice(0,count);
 }
 function generateTypos(word){
@@ -1093,7 +1117,18 @@ function randomTypo(word){const pool=generateTypos(word);return pool[Math.floor(
 function initSpell(){
   clearInterval(timerInterval);
   lastGameMode='spell';
-  spQuestions=shuffle(words.map(w=>{const d=makeDistractors(w.en,words,3);return{kr:w.kr,correct:w.en,choices:shuffle([w.en,...d])};} ));
+  spQuestions=shuffle(words.map(w=>{
+    const correctLower=w.en.toLowerCase();
+    const d=makeDistractors(correctLower, words.map(x=>({...x,en:x.en.toLowerCase()})), 3);
+    const allChoices=[correctLower,...d];
+    // 완전 중복 제거 (소문자 통일 후)
+    const seen=new Set();
+    const unique=allChoices.filter(c=>{if(seen.has(c))return false;seen.add(c);return true;});
+    // 4개 미만이면 추가 오타로 채우기
+    const typos=shuffle([...generateTypos(correctLower)]);
+    for(const t of typos){if(unique.length>=4)break;if(!seen.has(t)){seen.add(t);unique.push(t);}}
+    return{kr:w.kr,correct:correctLower,choices:shuffle(unique.slice(0,4))};
+  }));
   spIdx=0;spScore=0;spWrongs=0;spAttempts=[];
   startTs=Date.now();totalTime=calcTime(words.length);timeLeft=totalTime;
   document.getElementById('spell-score-row').innerHTML=spQuestions.map((_,i)=>`<div class="spell-score-dot" id="sdot-${i}"></div>`).join('');
@@ -1177,7 +1212,8 @@ function showResult(mode){
     submitRow.style.display='block';
     submitStatus.textContent='📤 결과를 선생님께 전송 중...';
     submitStatus.style.color='var(--muted)';
-    const resultData={studentName,mode,score,elapsedSec,tries,wrongs,acc,grade,attempts,startedAt:new Date(startTs).toISOString(),submittedAt:new Date().toISOString()};
+    const totalQ=mode==='match'?words.length:spQuestions.length;
+    const resultData={studentName,mode,score,elapsedSec,tries,wrongs,acc,grade,attempts,totalQ,className:studentClassName,startedAt:new Date(startTs).toISOString(),submittedAt:new Date().toISOString()};
     submitResult(resultData).then(()=>{
       submitStatus.textContent=getFirebaseURL()?'✅ 선생님께 결과가 전달됐어요!':'✅ 결과가 저장됐어요!';
       submitStatus.style.color='var(--green)';
@@ -1313,10 +1349,35 @@ function openDashboard(){
   if(fbUrl){document.getElementById('firebase-url-input').value=fbUrl;checkFirebaseConnection();}
   showScreen('dashboard-screen');refreshDashboard();
 }
+let dashClassFilter='all';
 function setDashFilter(f){
   dashFilter=f;
   ['all','match','spell'].forEach(k=>document.getElementById('df-'+k).classList.toggle('active',k===f));
   renderDashboard();
+}
+function setDashClassFilter(cls){
+  dashClassFilter=cls;
+  document.querySelectorAll('.dash-cls-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.cls===cls);
+  });
+  renderDashboard();
+}
+function buildClassFilterBtns(){
+  const container=document.getElementById('dash-class-filters');
+  if(!container)return;
+  // 데이터에서 클래스 이름 수집
+  const classes=['all',...new Set(dashData.map(d=>d.className||'').filter(c=>c))].sort();
+  if(classes.length<=1){container.style.display='none';return;}
+  container.style.display='flex';
+  container.innerHTML='';
+  classes.forEach(cls=>{
+    const btn=document.createElement('button');
+    btn.className='dash-filter-btn dash-cls-btn'+(dashClassFilter===cls?' active':'');
+    btn.dataset.cls=cls;
+    btn.textContent=cls==='all'?'전체 클래스':cls;
+    btn.onclick=()=>setDashClassFilter(cls);
+    container.appendChild(btn);
+  });
 }
 function setDashSort(s){
   dashSort=s;
@@ -1338,7 +1399,12 @@ function fmtTime(isoStr){if(!isoStr)return'';try{return new Date(isoStr).toLocal
 function fmtDate(isoStr){if(!isoStr)return'';try{return new Date(isoStr).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'});}catch(e){return'';}}
 function renderDashboard(){
   const list=document.getElementById('dashboard-list');
-  let filtered=dashData.filter(d=>dashFilter==='all'||d.mode===dashFilter);
+  buildClassFilterBtns();
+  let filtered=dashData.filter(d=>{
+    if(dashFilter!=='all'&&d.mode!==dashFilter)return false;
+    if(dashClassFilter!=='all'&&(d.className||'')!==dashClassFilter)return false;
+    return true;
+  });
   if(dashSort==='score'){
     filtered.sort((a,b)=>(b.score||0)!==(a.score||0)?(b.score||0)-(a.score||0):(a.elapsedSec||0)-(b.elapsedSec||0));
   }else{
@@ -1357,7 +1423,7 @@ function renderDashboard(){
     const card=document.createElement('div');card.className='student-card';
     const delBtnId='del_'+i;
     card.style.position='relative';
-    card.innerHTML=`<div class="rank-badge ${rankClass}">${rankLabel}</div><div class="student-card-info"><div class="student-card-name">${escHtml(d.studentName||'익명')}</div><div class="student-card-meta">${modeTag} &nbsp;⏱ <strong>${d.elapsedSec||0}초</strong> &nbsp;❌ ${d.wrongs||0}번</div><div class="student-card-meta" style="margin-top:2px;font-size:10px;">📅 ${fmtDate(d.startedAt)||'?'} &nbsp;🕐 ${fmtTime(d.startedAt)||'?'} → ${fmtTime(d.submittedAt)||'?'}</div></div><div class="student-card-right"><div class="score-pill ${scoreClass}">${s}점</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:700;">${d.grade||''}</div><div style="font-size:10px;color:var(--light);margin-top:4px;">📋 상세보기</div></div><button id="${delBtnId}" title="삭제" style="position:absolute;top:6px;right:6px;background:none;border:none;cursor:pointer;color:var(--light);font-size:15px;padding:2px 5px;border-radius:4px;line-height:1;transition:all .15s;" onmouseenter="this.style.color='var(--red)';this.style.background='var(--red-l)'" onmouseleave="this.style.color='var(--light)';this.style.background='none'" onclick="event.stopPropagation();deleteOneResult(${i},this.closest('.student-card'))">✕</button>`;
+    card.innerHTML=`<div class="rank-badge ${rankClass}">${rankLabel}</div><div class="student-card-info"><div class="student-card-name">${escHtml(d.studentName||'익명')}</div><div class="student-card-meta">${modeTag} &nbsp;⏱ <strong>${d.elapsedSec||0}초</strong> &nbsp;❌ ${d.wrongs||0}번</div><div class="student-card-meta" style="margin-top:2px;font-size:10px;">📅 ${fmtDate(d.startedAt)||'?'} &nbsp;🕐 ${fmtTime(d.startedAt)||'?'} → ${fmtTime(d.submittedAt)||'?'}</div></div><div class="student-card-right"><div class="score-pill ${scoreClass}">${d.totalQ?`${d.totalQ-(d.wrongs||0)}/${d.totalQ}`:s+'점'}</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:700;">${s}점 ${d.grade||''}</div><div style="font-size:10px;color:var(--light);margin-top:4px;">📋 상세보기</div></div><button id="${delBtnId}" title="삭제" style="position:absolute;top:6px;right:6px;background:none;border:none;cursor:pointer;color:var(--light);font-size:15px;padding:2px 5px;border-radius:4px;line-height:1;transition:all .15s;" onmouseenter="this.style.color='var(--red)';this.style.background='var(--red-l)'" onmouseleave="this.style.color='var(--light)';this.style.background='none'" onclick="event.stopPropagation();deleteOneResult(${i},this.closest('.student-card'))">✕</button>`;
     card.addEventListener('click',()=>openDetail(d));
     list.appendChild(card);
   });
@@ -1372,7 +1438,7 @@ function openDetail(d){
   if(atts.length===0){rows=`<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">상세 기록 없음 (구버전 데이터)</div>`;}
   else if(d.mode==='match'){rows=atts.map(a=>`<div class="log-row"><span style="flex:1;">${escHtml(a.kr)} — <strong>${escHtml(a.en)}</strong></span><span class="${a.ok?'log-ok':'log-fail'}">${a.ok?'✓':'✗'}</span></div>`).join('');}
   else{rows=atts.map(a=>`<div class="log-row" style="flex-direction:column;align-items:flex-start;gap:2px;"><div style="display:flex;width:100%;justify-content:space-between;"><strong>${escHtml(a.kr)}</strong><span class="${a.ok?'log-ok':'log-fail'}">${a.ok?'✓':'✗'}</span></div><div style="font-size:12px;">선택: <span style="color:${a.ok?'var(--green)':'var(--red)'};">${escHtml(a.chosen)}</span>${a.ok?'':'&nbsp;&nbsp;정답: <span style="color:var(--green);font-weight:800;">'+escHtml(a.correct)+'</span>'}</div></div>`).join('');}
-  document.getElementById('detail-modal-body').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;"><span class="score-pill ${scoreClass}">${s}점 (${d.grade||''})</span><span class="mode-tag ${d.mode==='match'?'mode-match':'mode-spell'}">${modeLabel}</span><span style="font-size:12px;color:var(--muted);font-weight:600;align-self:center;">⏱ ${d.elapsedSec||0}초 &nbsp;❌ ${d.wrongs||0}번</span></div><div style="font-size:11px;color:var(--light);margin-bottom:12px;font-weight:600;">📅 ${fmtDate(d.startedAt)||'?'} &nbsp;🕐 시작 ${fmtTime(d.startedAt)||'?'} → 제출 ${fmtTime(d.submittedAt)||'?'}</div><div class="log-panel" style="margin:0;max-height:360px;overflow-y:auto;"><div class="log-title">${atts.length}개 문제 기록</div>${rows}</div>`;
+  document.getElementById('detail-modal-body').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;"><span class="score-pill ${scoreClass}">${d.totalQ?`${d.totalQ-(d.wrongs||0)}/${d.totalQ} (${s}점)`:s+'점'} ${d.grade||''}</span>${d.className?`<span class="mode-tag" style="background:var(--purple-l);color:var(--purple);">📚 ${escHtml(d.className)}</span>`:''}<span class="mode-tag ${d.mode==='match'?'mode-match':'mode-spell'}">${modeLabel}</span><span style="font-size:12px;color:var(--muted);font-weight:600;align-self:center;">⏱ ${d.elapsedSec||0}초 &nbsp;❌ ${d.wrongs||0}번</span></div><div style="font-size:11px;color:var(--light);margin-bottom:12px;font-weight:600;">📅 ${fmtDate(d.startedAt)||'?'} &nbsp;🕐 시작 ${fmtTime(d.startedAt)||'?'} → 제출 ${fmtTime(d.submittedAt)||'?'}</div><div class="log-panel" style="margin:0;max-height:360px;overflow-y:auto;"><div class="log-title">${atts.length}개 문제 기록</div>${rows}</div>`;
   document.getElementById('detail-modal').classList.add('show');
 }
 async function clearDashboard(){
@@ -1609,14 +1675,15 @@ async function generateQRFromCurrentWords(){
 function generateQRFromClass(id,cls){
   const validWords=(cls.words||[]).filter(w=>w.kr&&w.en);
   if(validWords.length===0){alert('이 클래스에 단어가 없어요.');return;}
-  words=validWords;generateQRWithClassId(id,currentMode,validWords);
+  words=validWords;generateQRWithClassId(id,currentMode,validWords,cls.name||'');
 }
-function generateQRWithClassId(clsId,mode,wordList){
+function generateQRWithClassId(clsId,mode,wordList,clsName=''){
   const fbUrl=getFirebaseURL();
   const fbParam=fbUrl?'&fb='+encodeURIComponent(fbUrl):'';
   const spw=parseInt(document.getElementById('sec-per-word')?.value||3);
   const alpha=parseInt(document.getElementById('alpha-sec')?.value||5);
-  const url=location.origin+location.pathname+'?cls='+clsId+'&mode='+mode+'&spw='+spw+'&alpha='+alpha+fbParam;
+  const cnParam=clsName?'&cn='+encodeURIComponent(clsName):'';
+  const url=location.origin+location.pathname+'?cls='+clsId+'&mode='+mode+'&spw='+spw+'&alpha='+alpha+cnParam+fbParam;
   document.getElementById('qr-class-list').style.display='none';
   document.getElementById('qr-generate-result').style.display='block';
   const qrDiv=document.getElementById('qr-container');qrDiv.innerHTML='';
@@ -1643,6 +1710,10 @@ function loadFromURL(){
     const alphaParam=params.get('alpha');
     if(spwParam){const el=document.getElementById('sec-per-word');if(el){el.value=spwParam;document.getElementById('sec-per-word-val').textContent=spwParam+'초';}}
     if(alphaParam){const el=document.getElementById('alpha-sec');if(el){el.value=alphaParam;document.getElementById('alpha-sec-val').textContent=alphaParam+'초';}}
+    // 클래스 이름 파라미터
+    const cnParam=params.get('cn');
+    if(cnParam)studentClassName=decodeURIComponent(cnParam);
+    else studentClassName='';
     const clsId=params.get('cls');
     if(clsId){currentMode=mode;isStudentMode=true;updateSetupUI(mode);loadWordsByClsId(clsId,mode);return true;}
     const raw=params.get('words');if(!raw)return false;
