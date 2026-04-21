@@ -1191,7 +1191,10 @@ function showResult(mode){
   else{grade='D';label='다시 열심히 해봐요!';}
   document.getElementById('result-grade').textContent=grade;
   document.getElementById('result-label').textContent=label;
-  document.getElementById('result-score').textContent=score+'점';
+  // 학생/선생님 모두 X/전체 형식
+  const totalQ=mode==='match'?words.length:spQuestions.length;
+  const correctQ=mode==='match'?mMatched:spScore;
+  document.getElementById('result-score').textContent=correctQ+'/'+totalQ;
   document.getElementById('r-time').textContent=elapsedSec+'s';
   document.getElementById('r-tries').textContent=tries;
   document.getElementById('r-wrong').textContent=wrongs;
@@ -1449,8 +1452,12 @@ async function clearDashboard(){
   dashData=[];renderDashboard();
 }
 async function deleteOneResult(idx,cardEl){
-  // filtered 배열 기준 idx → dashData에서 실제 항목 찾기
-  const filtered=dashData.filter(d=>dashFilter==='all'||d.mode===dashFilter);
+  // renderDashboard와 동일한 필터+정렬 적용
+  let filtered=dashData.filter(d=>{
+    if(dashFilter!=='all'&&d.mode!==dashFilter)return false;
+    if(dashClassFilter!=='all'&&(d.className||'')!==dashClassFilter)return false;
+    return true;
+  });
   if(dashSort==='score'){
     filtered.sort((a,b)=>(b.score||0)!==(a.score||0)?(b.score||0)-(a.score||0):(a.elapsedSec||0)-(b.elapsedSec||0));
   }else{
