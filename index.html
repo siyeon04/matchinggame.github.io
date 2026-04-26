@@ -48,7 +48,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .home-logo{text-align:center;padding:32px 0 28px;}
 .home-logo h1{font-size:28px;font-weight:900;color:var(--accent);}
 .home-logo p{font-size:13px;color:var(--muted);margin-top:6px;}
-.game-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;}
+.game-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
 .game-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--r);padding:24px 16px;text-align:center;cursor:pointer;transition:all .2s;box-shadow:var(--shadow);}
 .game-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(79,110,247,.18);}
 .game-card.match-card:hover{border-color:var(--accent);}
@@ -338,6 +338,46 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 /* detail modal */
 .dash-filter-btn.active-sort{background:var(--purple);color:#fff;border-color:var(--purple);}
 .detail-modal-box{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:24px 20px;text-align:left;max-width:460px;width:94%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(79,110,247,.18);animation:popUp .25s ease;}
+
+/* ── TYPING GAME ── */
+.tab-btn.active-type{background:#0891b2;color:#fff;box-shadow:0 2px 10px rgba(8,145,178,.3);}
+.tab-btn.active-meaning{background:#9b6ef7;color:#fff;box-shadow:0 2px 10px rgba(155,110,247,.3);}
+.setup-logo-text.type-color{color:#0891b2;}
+.setup-logo-text.meaning-color{color:#9b6ef7;}
+.btn-type{background:#0891b2;color:#fff;width:100%;box-shadow:0 4px 18px rgba(8,145,178,.35);}
+.btn-type:hover{background:#0e7490;transform:translateY(-1px);}
+.btn-meaning{background:#9b6ef7;color:#fff;width:100%;box-shadow:0 4px 18px rgba(155,110,247,.35);}
+.btn-meaning:hover{background:#8a5aef;transform:translateY(-1px);}
+
+.type-question{background:linear-gradient(135deg,#0891b2,#06b6d4);border-radius:var(--r);padding:24px 20px;text-align:center;box-shadow:0 6px 24px rgba(8,145,178,.25);margin-bottom:16px;}
+.type-q-label{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:8px;}
+.type-q-word{font-size:36px;font-weight:900;color:#fff;}
+.type-q-counter{font-size:12px;color:rgba(255,255,255,.7);margin-top:4px;font-weight:600;}
+.letter-boxes{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px 0;}
+.letter-box{width:44px;height:54px;border:2.5px solid var(--soft);border-radius:var(--rx);background:#fff;font-size:22px;font-weight:900;text-align:center;font-family:'Nunito',monospace;outline:none;text-transform:lowercase;transition:border-color .15s,box-shadow .15s;cursor:pointer;caret-color:transparent;}
+.letter-box:focus{border-color:#0891b2;box-shadow:0 0 0 3px rgba(8,145,178,.18);background:#f0fbff;}
+.letter-box.filled{border-color:#0891b2;background:#e0f9ff;}
+.letter-box.correct{border-color:var(--green);background:var(--green-l);color:#158a4a;}
+.letter-box.wrong{border-color:var(--red);background:var(--red-l);color:#c0392b;}
+.type-nav-btns{display:flex;gap:10px;margin-top:12px;}
+.type-q-dots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:8px 0;}
+.type-q-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--soft);background:var(--surface2);font-size:11px;font-weight:800;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;}
+.type-q-dot.current{border-color:#0891b2;background:#0891b2;color:#fff;}
+.type-q-dot.answered{border-color:var(--green);background:var(--green-l);color:#158a4a;}
+
+.meaning-question{background:linear-gradient(135deg,#9b6ef7,#c084fc);border-radius:var(--r);padding:24px 20px;text-align:center;box-shadow:0 6px 24px rgba(155,110,247,.25);}
+.meaning-q-label{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:8px;}
+.meaning-q-word{font-size:36px;font-weight:900;color:#fff;letter-spacing:-.5px;}
+.meaning-q-counter{font-size:12px;color:rgba(255,255,255,.7);margin-top:4px;font-weight:600;}
+.meaning-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.meaning-choice{background:#fff;border:2px solid var(--soft);border-radius:var(--rs);padding:14px 12px;font-size:14px;font-weight:700;text-align:center;cursor:pointer;transition:all .15s;color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,.06);}
+.meaning-choice:hover:not(.mc-correct):not(.mc-wrong):not(.mc-disabled){border-color:#9b6ef7;background:var(--purple-l);color:#9b6ef7;transform:translateY(-1px);}
+.meaning-choice.mc-correct{border-color:var(--green);background:var(--green-l);color:#158a4a;pointer-events:none;}
+.meaning-choice.mc-wrong{border-color:var(--red);background:var(--red-l);color:#c0392b;animation:shake .35s ease;pointer-events:none;}
+.meaning-choice.mc-disabled{opacity:.45;pointer-events:none;}
+.meaning-choice.mc-reveal{border-color:var(--green);background:var(--green-l);color:#158a4a;pointer-events:none;}
+.mode-type{background:#e0f9ff;color:#0891b2;}
+.mode-meaning{background:var(--purple-l);color:#9b6ef7;}
 </style>
 </head>
 <body>
@@ -380,6 +420,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="game-card-title">스펠링 게임</div>
       <div class="game-card-desc">뜻을 보고 올바른<br>스펠링 고르기</div>
       <div class="game-card-badge">SPELLING</div>
+    </div>
+    <div class="game-card" style="border-color:rgba(6,182,212,.2);" onclick="goSetup('type')">
+      <div class="game-card-icon">⌨️</div>
+      <div class="game-card-title">타이핑 게임</div>
+      <div class="game-card-desc">뜻을 보고 스펠링을<br>한 글자씩 직접 입력</div>
+      <div class="game-card-badge" style="background:#e0f9ff;color:#0891b2;">TYPING</div>
+    </div>
+    <div class="game-card" style="border-color:rgba(168,85,247,.2);" onclick="goSetup('meaning')">
+      <div class="game-card-icon">🔍</div>
+      <div class="game-card-title">뜻 맞추기</div>
+      <div class="game-card-desc">영어 단어를 보고<br>올바른 뜻 고르기</div>
+      <div class="game-card-badge" style="background:#f3eeff;color:#9b6ef7;">MEANING</div>
     </div>
   </div>
   <div class="panel" style="padding:16px 20px;">
@@ -480,6 +532,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <button class="dash-filter-btn active" id="df-all" onclick="setDashFilter('all')">전체</button>
     <button class="dash-filter-btn" id="df-match" onclick="setDashFilter('match')">🃏 매칭</button>
     <button class="dash-filter-btn" id="df-spell" onclick="setDashFilter('spell')">✏️ 스펠링</button>
+    <button class="dash-filter-btn" id="df-type" onclick="setDashFilter('type')">⌨️ 타이핑</button>
+    <button class="dash-filter-btn" id="df-meaning" onclick="setDashFilter('meaning')">🔍 뜻맞추기</button>
     <div style="width:1px;background:var(--soft);margin:0 4px;align-self:stretch;"></div>
     <button class="dash-filter-btn active-sort" id="ds-score" onclick="setDashSort('score')">🏆 점수순</button>
     <button class="dash-filter-btn" id="ds-time" onclick="setDashSort('time')">🕐 시간순</button>
@@ -499,9 +553,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
     <div class="setup-logo-sub" id="setup-logo-sub">한국어 ↔ 영어 카드 짝 맞추기</div>
   </div>
-  <div class="tab-bar">
-    <button class="tab-btn active-match" id="tab-match" onclick="switchMode('match')">🃏 매칭 게임</button>
-    <button class="tab-btn" id="tab-spell" onclick="switchMode('spell')">✏️ 스펠링 게임</button>
+  <div class="tab-bar" style="flex-wrap:wrap;">
+    <button class="tab-btn active-match" id="tab-match" onclick="switchMode('match')">🃏 매칭</button>
+    <button class="tab-btn" id="tab-spell" onclick="switchMode('spell')">✏️ 스펠링</button>
+    <button class="tab-btn" id="tab-type" onclick="switchMode('type')">⌨️ 타이핑</button>
+    <button class="tab-btn" id="tab-meaning" onclick="switchMode('meaning')">🔍 뜻맞추기</button>
   </div>
   <div class="panel">
     <div class="panel-title">단어 갯수</div>
@@ -603,6 +659,70 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="game-btns" id="spell-teacher-btns" style="margin-top:20px;">
     <button class="btn btn-secondary" onclick="backToSetup()">← 처음으로</button>
     <button class="btn btn-secondary" onclick="initSpell()">↺ 다시 시작</button>
+  </div>
+</div>
+
+
+<!-- ══ TYPING GAME ══ -->
+<div id="type-game-screen" class="screen">
+  <div class="game-header">
+    <div>
+      <div class="game-title" style="color:#0891b2;">⌨️ 타이핑 게임</div>
+      <div class="game-progress-sub" id="type-progress-text">1 / 0 문제</div>
+    </div>
+    <div class="timer-ring-wrap">
+      <svg width="64" height="64" viewBox="0 0 64 64">
+        <circle class="timer-track" cx="32" cy="32" r="27"/>
+        <circle class="timer-arc" id="type-timer-arc" cx="32" cy="32" r="27" stroke-dasharray="169.65" stroke-dashoffset="0" style="stroke:#06b6d4;"/>
+      </svg>
+      <div class="timer-label"><span id="type-timer-num">0</span><small>SEC</small></div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="type-progress-fill" style="width:0%;background:linear-gradient(90deg,#0891b2,#06b6d4);"></div></div>
+  <div class="type-question">
+    <div class="type-q-label">이 단어를 영어로 입력하세요</div>
+    <div class="type-q-word" id="type-q-word">사과</div>
+    <div class="type-q-counter" id="type-q-counter">1 / 5</div>
+  </div>
+  <div class="type-q-dots" id="type-q-dots"></div>
+  <div class="letter-boxes" id="letter-boxes"></div>
+  <div class="type-nav-btns">
+    <button class="btn btn-secondary" style="flex:1;" onclick="typePrevQ()" id="type-prev-btn">← 이전</button>
+    <button class="btn btn-type" style="flex:1;" onclick="typeNextQ()" id="type-next-btn">다음 →</button>
+  </div>
+  <div class="game-btns" id="type-teacher-btns" style="margin-top:10px;">
+    <button class="btn btn-secondary" onclick="backToSetup()">← 처음으로</button>
+  </div>
+</div>
+
+<!-- ══ MEANING GAME ══ -->
+<div id="meaning-game-screen" class="screen">
+  <div class="game-header">
+    <div>
+      <div class="game-title" style="color:#9b6ef7;">🔍 뜻 맞추기</div>
+      <div class="game-progress-sub" id="meaning-progress-text">1 / 0 문제</div>
+    </div>
+    <div class="timer-ring-wrap">
+      <svg width="64" height="64" viewBox="0 0 64 64">
+        <circle class="timer-track" cx="32" cy="32" r="27"/>
+        <circle class="timer-arc" id="meaning-timer-arc" cx="32" cy="32" r="27" stroke-dasharray="169.65" stroke-dashoffset="0" style="stroke:#9b6ef7;"/>
+      </svg>
+      <div class="timer-label"><span id="meaning-timer-num">0</span><small>SEC</small></div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="meaning-progress-fill" style="width:0%;background:linear-gradient(90deg,#9b6ef7,#c084fc);"></div></div>
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="meaning-question">
+      <div class="meaning-q-label">이 단어의 뜻은?</div>
+      <div class="meaning-q-word" id="meaning-q-word">apple</div>
+      <div class="meaning-q-counter" id="meaning-q-counter">1 / 5</div>
+    </div>
+    <div class="spell-score-row" id="meaning-score-row"></div>
+    <div class="meaning-choices" id="meaning-choices"></div>
+  </div>
+  <div class="game-btns" id="meaning-teacher-btns" style="margin-top:20px;">
+    <button class="btn btn-secondary" onclick="backToSetup()">← 처음으로</button>
+    <button class="btn btn-secondary" onclick="initMeaning()">↺ 다시 시작</button>
   </div>
 </div>
 
@@ -844,15 +964,23 @@ function backToSetup(){
 function goSetup(mode){currentMode=mode;updateSetupUI(mode);showScreen('setup-screen');}
 function switchMode(mode){currentMode=mode;updateSetupUI(mode);}
 function updateSetupUI(mode){
-  const isM=mode==='match';
-  document.getElementById('tab-match').className='tab-btn'+(isM?' active-match':'');
-  document.getElementById('tab-spell').className='tab-btn'+(isM?'':' active-spell');
-  document.getElementById('setup-logo-icon').textContent=isM?'🃏':'✏️';
-  document.getElementById('setup-logo-text').textContent=isM?'매칭 게임':'스펠링 게임';
-  document.getElementById('setup-logo-text').className='setup-logo-text '+(isM?'match-color':'spell-color');
-  document.getElementById('setup-logo-sub').textContent=isM?'한국어 ↔ 영어 카드 짝 맞추기':'뜻을 보고 올바른 스펠링 고르기';
-  document.getElementById('start-btn').textContent=isM?'🎮 매칭 게임 시작':'✏️ 스펠링 게임 시작';
-  document.getElementById('start-btn').className='btn '+(isM?'btn-primary':'btn-orange');
+  const configs={
+    match:{tab:'active-match',icon:'🃏',title:'매칭 게임',sub:'한국어 ↔ 영어 카드 짝 맞추기',btnText:'🎮 매칭 게임 시작',btnClass:'btn-primary',logoColor:'match-color'},
+    spell:{tab:'active-spell',icon:'✏️',title:'스펠링 게임',sub:'뜻을 보고 올바른 스펠링 고르기',btnText:'✏️ 스펠링 게임 시작',btnClass:'btn-orange',logoColor:'spell-color'},
+    type:{tab:'active-type',icon:'⌨️',title:'타이핑 게임',sub:'뜻을 보고 한 글자씩 직접 입력',btnText:'⌨️ 타이핑 게임 시작',btnClass:'btn-type',logoColor:'type-color'},
+    meaning:{tab:'active-meaning',icon:'🔍',title:'뜻 맞추기',sub:'영어 단어를 보고 올바른 뜻 고르기',btnText:'🔍 뜻 맞추기 시작',btnClass:'btn-meaning',logoColor:'meaning-color'},
+  };
+  const c=configs[mode]||configs.match;
+  ['match','spell','type','meaning'].forEach(k=>{
+    const el=document.getElementById('tab-'+k);
+    if(el)el.className='tab-btn'+(mode===k?' '+configs[k].tab:'');
+  });
+  document.getElementById('setup-logo-icon').textContent=c.icon;
+  document.getElementById('setup-logo-text').textContent=c.title;
+  document.getElementById('setup-logo-text').className='setup-logo-text '+c.logoColor;
+  document.getElementById('setup-logo-sub').textContent=c.sub;
+  document.getElementById('start-btn').textContent=c.btnText;
+  document.getElementById('start-btn').className='btn '+c.btnClass;
   updateTimerHint(selectedCount);
 }
 function changeCount(delta){
@@ -894,6 +1022,8 @@ function startGame(){
   const w=collectWords();if(!w)return;
   words=w;addToHistory(w);
   if(currentMode==='match')initMatch();
+  else if(currentMode==='type')initType();
+  else if(currentMode==='meaning')initMeaning();
   else initSpell();
 }
 
@@ -902,7 +1032,8 @@ function startGame(){
 ═══════════════════════════ */
 function showNameScreen(mode){
   pendingGameMode=mode;
-  document.getElementById('name-mode-label').textContent=mode==='match'?'🃏 매칭 게임':'✏️ 스펠링 게임';
+  const modeLabels={match:'🃏 매칭 게임',spell:'✏️ 스펠링 게임',type:'⌨️ 타이핑 게임',meaning:'🔍 뜻 맞추기'};
+  document.getElementById('name-mode-label').textContent=modeLabels[mode]||mode;
   document.getElementById('student-name-input').value='';
   document.getElementById('name-err').textContent='';
   showScreen('name-screen');
@@ -917,11 +1048,15 @@ function confirmName(){
 }
 function startFromReady(){
   if(currentMode==='match')initMatch();
+  else if(currentMode==='type')initType();
+  else if(currentMode==='meaning')initMeaning();
   else initSpell();
 }
 function studentRetry(){
   startCountdown(()=>{
     if(lastGameMode==='match')initMatch();
+    else if(lastGameMode==='type')initType();
+    else if(lastGameMode==='meaning')initMeaning();
     else initSpell();
   });
 }
@@ -963,13 +1098,16 @@ function startCountdown(callback){
    TIMER UI
 ═══════════════════════════ */
 function updateTimerUI(mode){
-  const arcId=mode==='match'?'match-timer-arc':'spell-timer-arc';
-  const numId=mode==='match'?'match-timer-num':'spell-timer-num';
+  const arcMap={match:'match-timer-arc',spell:'spell-timer-arc',type:'type-timer-arc',meaning:'meaning-timer-arc'};
+  const numMap={match:'match-timer-num',spell:'spell-timer-num',type:'type-timer-num',meaning:'meaning-timer-num'};
+  const arcId=arcMap[mode]||'match-timer-arc';
+  const numId=numMap[mode]||'match-timer-num';
   const arc=document.getElementById(arcId),numEl=document.getElementById(numId);
   if(!arc||!numEl)return;
   const r=Math.max(0,timeLeft/totalTime);
   arc.style.strokeDashoffset=CIRC*(1-r);
-  arc.style.stroke=r>.5?(mode==='match'?'#22c16b':'#ff7b3a'):r>.25?'#f0952a':'#f7564f';
+  const baseColor=mode==='match'?'#22c16b':mode==='type'?'#06b6d4':mode==='meaning'?'#9b6ef7':'#ff7b3a';
+  arc.style.stroke=r>.5?baseColor:r>.25?'#f0952a':'#f7564f';
   numEl.textContent=timeLeft;
   numEl.style.color=r<=.25?'#f7564f':'var(--text)';
 }
@@ -996,11 +1134,13 @@ function showTimeout(mode){
 }
 function closeTimeoutRetry(){
   document.getElementById('timeout-overlay').classList.remove('show');
-  if(isStudentMode){
-    startCountdown(()=>{if(lastGameMode==='match')initMatch();else initSpell();});
-  }else{
-    if(lastGameMode==='match')initMatch();else initSpell();
-  }
+  const doRetry=()=>{
+    if(lastGameMode==='match')initMatch();
+    else if(lastGameMode==='type')initType();
+    else if(lastGameMode==='meaning')initMeaning();
+    else initSpell();
+  };
+  if(isStudentMode)startCountdown(doRetry);else doRetry();
 }
 function closeTimeoutSetup(){
   document.getElementById('timeout-overlay').classList.remove('show');
@@ -1053,7 +1193,7 @@ function mTryMatch(){
     if(mMatched===words.length){clearInterval(timerInterval);stopBGM();elapsedSec=Math.floor((Date.now()-startTs)/1000);sfxGameClear();setTimeout(()=>showResult('match'),500);}
   }else{
     mWrongs++;mCombo=0;
-    mAttempts.push({kr:kEl.textContent,en:eEl.textContent,ok:false});
+    // 틀린 시도는 기록하지 않음 (맞힌 것만 기록)
     sfxWrong();
     kEl.classList.remove('selected');kEl.classList.add('wrong');
     eEl.classList.remove('selected');eEl.classList.add('wrong');
@@ -1173,13 +1313,19 @@ function showResult(mode){
   if(mode==='match'){
     score=Math.min(100,Math.max(0,Math.round(100-(mWrongs*8)+Math.floor(Math.max(0,timeLeft)/2))));
     tries=mTries;wrongs=mWrongs;acc=tries>0?Math.round(mMatched/tries*100):100;attempts=mAttempts;
-    wrap.className='result-grade-wrap match-result';
+    wrap.className='result-grade-wrap match-result';wrap.style.background='';
     document.getElementById('result-retry-btn').className='btn btn-primary';
     document.getElementById('log-title').textContent='매칭 기록';
+  }else if(mode==='meaning'){
+    score=Math.round(mnScore/mnQuestions.length*100);
+    tries=mnQuestions.length;wrongs=mnWrongs;acc=Math.round(mnScore/mnQuestions.length*100);attempts=mnAttempts;
+    wrap.className='result-grade-wrap';wrap.style.background='linear-gradient(135deg,#9b6ef7,#c084fc)';
+    document.getElementById('result-retry-btn').className='btn btn-meaning';
+    document.getElementById('log-title').textContent='뜻맞추기 기록';
   }else{
     score=Math.round(spScore/spQuestions.length*100);
     tries=spQuestions.length;wrongs=spWrongs;acc=Math.round(spScore/spQuestions.length*100);attempts=spAttempts;
-    wrap.className='result-grade-wrap spell-result';
+    wrap.className='result-grade-wrap spell-result';wrap.style.background='';
     document.getElementById('result-retry-btn').className='btn btn-orange';
     document.getElementById('log-title').textContent='스펠링 기록';
   }
@@ -1192,8 +1338,8 @@ function showResult(mode){
   document.getElementById('result-grade').textContent=grade;
   document.getElementById('result-label').textContent=label;
   // 학생/선생님 모두 X/전체 형식
-  const totalQ=mode==='match'?words.length:spQuestions.length;
-  const correctQ=mode==='match'?mMatched:spScore;
+  const totalQ=mode==='match'?words.length:mode==='meaning'?mnQuestions.length:spQuestions.length;
+  const correctQ=mode==='match'?mMatched:mode==='meaning'?mnScore:spScore;
   document.getElementById('result-score').textContent=correctQ+'/'+totalQ;
   document.getElementById('r-time').textContent=elapsedSec+'s';
   document.getElementById('r-tries').textContent=tries;
@@ -1215,8 +1361,8 @@ function showResult(mode){
     submitRow.style.display='block';
     submitStatus.textContent='📤 결과를 선생님께 전송 중...';
     submitStatus.style.color='var(--muted)';
-    const totalQ=mode==='match'?words.length:spQuestions.length;
-    const correctQ=mode==='match'?mMatched:spScore;
+    const totalQ=mode==='match'?words.length:mode==='meaning'?mnQuestions.length:spQuestions.length;
+    const correctQ=mode==='match'?mMatched:mode==='meaning'?mnScore:spScore;
     const resultData={studentName,mode,score,elapsedSec,tries,wrongs,acc,grade,attempts,totalQ,correctQ,className:studentClassName,startedAt:new Date(startTs).toISOString(),submittedAt:new Date().toISOString()};
     submitResult(resultData).then(()=>{
       submitStatus.textContent=getFirebaseURL()?'✅ 선생님께 결과가 전달됐어요!':'✅ 결과가 저장됐어요!';
@@ -1237,6 +1383,8 @@ function showResult(mode){
     const row=document.createElement('div');row.className='log-row';
     if(mode==='match'){
       row.innerHTML=`<span>${escHtml(a.kr)} — ${escHtml(a.en)}</span><span class="${a.ok?'log-ok':'log-fail'}">${a.ok?'✓':'✗'}</span>`;
+    }else if(mode==='meaning'){
+      row.innerHTML=`<span style="flex:1"><strong>${escHtml(a.en)}</strong> → <span style="color:${a.ok?'var(--green)':'var(--red)'};">${escHtml(a.chosen)}</span>${a.ok?'':' <span style="color:var(--muted);font-size:11px;">(정답: '+escHtml(a.correct)+')</span>'}</span><span class="${a.ok?'log-ok':'log-fail'}">${a.ok?'✓':'✗'}</span>`;
     }else{
       row.innerHTML=`<span style="flex:1"><strong>${escHtml(a.kr)}</strong> → <span style="color:${a.ok?'var(--green)':'var(--red)'};">${escHtml(a.chosen)}</span>${a.ok?'':' <span style="color:var(--muted);font-size:11px;">(정답: '+escHtml(a.correct)+')</span>'}</span><span class="${a.ok?'log-ok':'log-fail'}">${a.ok?'✓':'✗'}</span>`;
     }
@@ -1356,7 +1504,7 @@ function openDashboard(){
 let dashClassFilter='all';
 function setDashFilter(f){
   dashFilter=f;
-  ['all','match','spell'].forEach(k=>document.getElementById('df-'+k).classList.toggle('active',k===f));
+  ['all','match','spell','type','meaning'].forEach(k=>{const el=document.getElementById('df-'+k);if(el)el.classList.toggle('active',k===f);});
   renderDashboard();
 }
 function setDashClassFilter(cls){
@@ -1423,11 +1571,12 @@ function renderDashboard(){
     const rankLabel=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
     const s=d.score||0;
     const scoreClass=s>=95?'score-s':s>=80?'score-a':s>=60?'score-b':s>=40?'score-c':'score-d';
-    const modeTag=d.mode==='match'?'<span class="mode-tag mode-match">매칭</span>':'<span class="mode-tag mode-spell">스펠링</span>';
+    const modeTags={match:'<span class="mode-tag mode-match">매칭</span>',spell:'<span class="mode-tag mode-spell">스펠링</span>',type:'<span class="mode-tag mode-type">타이핑</span>',meaning:'<span class="mode-tag mode-meaning">뜻맞추기</span>'};
+    const modeTag=modeTags[d.mode]||modeTags.match;
     const card=document.createElement('div');card.className='student-card';
     const delBtnId='del_'+i;
     card.style.position='relative';
-    card.innerHTML=`<div class="rank-badge ${rankClass}">${rankLabel}</div><div class="student-card-info"><div class="student-card-name">${escHtml(d.studentName||'익명')}</div><div class="student-card-meta">${modeTag} &nbsp;⏱ <strong>${d.elapsedSec||0}초</strong> &nbsp;❌ ${d.wrongs||0}번</div><div class="student-card-meta" style="margin-top:2px;font-size:10px;">📅 ${fmtDate(d.startedAt)||'?'} &nbsp;🕐 ${fmtTime(d.startedAt)||'?'} → ${fmtTime(d.submittedAt)||'?'}</div></div><div class="student-card-right"><div class="score-pill ${scoreClass}">${d.totalQ?`${d.correctQ??d.totalQ-(d.wrongs||0)}/${d.totalQ}`:s+'점'}</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:700;">${s}점 ${d.grade||''}</div><div style="font-size:10px;color:var(--light);margin-top:4px;">📋 상세보기</div></div><button id="${delBtnId}" title="삭제" style="position:absolute;top:6px;right:6px;background:none;border:none;cursor:pointer;color:var(--light);font-size:15px;padding:2px 5px;border-radius:4px;line-height:1;transition:all .15s;" onmouseenter="this.style.color='var(--red)';this.style.background='var(--red-l)'" onmouseleave="this.style.color='var(--light)';this.style.background='none'" onclick="event.stopPropagation();deleteOneResult(${i},this.closest('.student-card'))">✕</button>`;
+    card.innerHTML=`<div class="rank-badge ${rankClass}">${rankLabel}</div><div class="student-card-info"><div class="student-card-name">${escHtml(d.studentName||'익명')}</div><div class="student-card-meta">${modeTag} &nbsp;⏱ <strong>${d.elapsedSec||0}초</strong> &nbsp;❌ ${d.wrongs||0}번</div><div class="student-card-meta" style="margin-top:2px;font-size:10px;">📅 ${fmtDate(d.startedAt)||'?'} &nbsp;🕐 ${fmtTime(d.startedAt)||'?'} → ${fmtTime(d.submittedAt)||'?'}</div></div><div class="student-card-right"><div class="score-pill ${scoreClass}">${d.totalQ?`${(d.correctQ!=null?d.correctQ:d.totalQ!=null?d.totalQ-(d.wrongs||0):'-')}/${d.totalQ}`:s+'점'}</div><div style="font-size:10px;color:var(--muted);margin-top:3px;font-weight:700;">${s}점 ${d.grade||''}</div><div style="font-size:10px;color:var(--light);margin-top:4px;">📋 상세보기</div></div><button id="${delBtnId}" title="삭제" style="position:absolute;top:6px;right:6px;background:none;border:none;cursor:pointer;color:var(--light);font-size:15px;padding:2px 5px;border-radius:4px;line-height:1;transition:all .15s;" onmouseenter="this.style.color='var(--red)';this.style.background='var(--red-l)'" onmouseleave="this.style.color='var(--light)';this.style.background='none'" onclick="event.stopPropagation();deleteOneResult(${i},this.closest('.student-card'))">✕</button>`;
     card.addEventListener('click',()=>openDetail(d));
     list.appendChild(card);
   });
@@ -1442,7 +1591,7 @@ function openDetail(d){
   if(atts.length===0){rows=`<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">상세 기록 없음 (구버전 데이터)</div>`;}
   else if(d.mode==='match'){rows=atts.map(a=>`<div class="log-row"><span style="flex:1;">${escHtml(a.kr)} — <strong>${escHtml(a.en)}</strong></span><span class="${a.ok?'log-ok':'log-fail'}">${a.ok?'✓':'✗'}</span></div>`).join('');}
   else{rows=atts.map(a=>`<div class="log-row" style="flex-direction:column;align-items:flex-start;gap:2px;"><div style="display:flex;width:100%;justify-content:space-between;"><strong>${escHtml(a.kr)}</strong><span class="${a.ok?'log-ok':'log-fail'}">${a.ok?'✓':'✗'}</span></div><div style="font-size:12px;">선택: <span style="color:${a.ok?'var(--green)':'var(--red)'};">${escHtml(a.chosen)}</span>${a.ok?'':'&nbsp;&nbsp;정답: <span style="color:var(--green);font-weight:800;">'+escHtml(a.correct)+'</span>'}</div></div>`).join('');}
-  document.getElementById('detail-modal-body').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;"><span class="score-pill ${scoreClass}">${d.totalQ?`${d.correctQ??d.totalQ-(d.wrongs||0)}/${d.totalQ} (${s}점)`:s+'점'} ${d.grade||''}</span>${d.className?`<span class="mode-tag" style="background:var(--purple-l);color:var(--purple);">📚 ${escHtml(d.className)}</span>`:''}<span class="mode-tag ${d.mode==='match'?'mode-match':'mode-spell'}">${modeLabel}</span><span style="font-size:12px;color:var(--muted);font-weight:600;align-self:center;">⏱ ${d.elapsedSec||0}초 &nbsp;❌ ${d.wrongs||0}번</span></div><div style="font-size:11px;color:var(--light);margin-bottom:12px;font-weight:600;">📅 ${fmtDate(d.startedAt)||'?'} &nbsp;🕐 시작 ${fmtTime(d.startedAt)||'?'} → 제출 ${fmtTime(d.submittedAt)||'?'}</div><div class="log-panel" style="margin:0;max-height:360px;overflow-y:auto;"><div class="log-title">${atts.length}개 문제 기록</div>${rows}</div>`;
+  document.getElementById('detail-modal-body').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;"><span class="score-pill ${scoreClass}">${d.totalQ?`${(d.correctQ!=null?d.correctQ:d.totalQ!=null?d.totalQ-(d.wrongs||0):'-')}/${d.totalQ} (${s}점)`:s+'점'} ${d.grade||''}</span>${d.className?`<span class="mode-tag" style="background:var(--purple-l);color:var(--purple);">📚 ${escHtml(d.className)}</span>`:''}<span class="mode-tag ${d.mode==='match'?'mode-match':'mode-spell'}">${modeLabel}</span><span style="font-size:12px;color:var(--muted);font-weight:600;align-self:center;">⏱ ${d.elapsedSec||0}초 &nbsp;❌ ${d.wrongs||0}번</span></div><div style="font-size:11px;color:var(--light);margin-bottom:12px;font-weight:600;">📅 ${fmtDate(d.startedAt)||'?'} &nbsp;🕐 시작 ${fmtTime(d.startedAt)||'?'} → 제출 ${fmtTime(d.submittedAt)||'?'}</div><div class="log-panel" style="margin:0;max-height:360px;overflow-y:auto;"><div class="log-title">${atts.length}개 문제 기록</div>${rows}</div>`;
   document.getElementById('detail-modal').classList.add('show');
 }
 async function clearDashboard(){
@@ -1756,6 +1905,274 @@ async function loadWordsByClsId(clsId,mode){
     document.getElementById('loading-screen').remove();
     const errDiv=document.createElement('div');errDiv.style.cssText='position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--bg);z-index:999;';errDiv.innerHTML='<div style="font-size:40px">😢</div><div style="font-size:16px;font-weight:700;color:var(--muted);text-align:center;">단어를 불러올 수 없어요.<br>선생님께 문의해주세요.</div>';document.body.appendChild(errDiv);
   }
+}
+
+/* ═══════════════════════════
+   TYPING GAME (한 글자씩 입력)
+═══════════════════════════ */
+let tpQuestions=[],tpIdx=0,tpAnswers=[],tpAnswered=0;
+
+function initType(){
+  clearInterval(timerInterval);
+  lastGameMode='type';
+  tpQuestions=shuffle([...words]);
+  tpIdx=0;
+  tpAnswers=tpQuestions.map(()=>''); // 각 문제 입력값 저장
+  tpAnswered=0;
+  startTs=Date.now();totalTime=calcTime(words.length);timeLeft=totalTime;
+  document.getElementById('type-teacher-btns').style.display=isStudentMode?'none':'flex';
+  document.getElementById('timeout-overlay').classList.remove('show');
+  showScreen('type-game-screen');
+  renderTypeQ();
+  updateTimerUI('type');
+  stopBGM();sfxGameStart();setTimeout(startBGM,600);
+  startTimer('type');
+}
+
+function renderTypeDots(){
+  const dots=document.getElementById('type-q-dots');
+  dots.innerHTML=tpQuestions.map((q,i)=>{
+    const cls=i===tpIdx?'current':tpAnswers[i]?'answered':'';
+    return `<div class="type-q-dot ${cls}" onclick="jumpTypeQ(${i})">${i+1}</div>`;
+  }).join('');
+}
+
+function renderTypeQ(){
+  const q=tpQuestions[tpIdx];
+  const total=tpQuestions.length;
+  document.getElementById('type-q-word').textContent=q.kr;
+  document.getElementById('type-q-counter').textContent=`${tpIdx+1} / ${total}`;
+  document.getElementById('type-progress-text').textContent=`${tpIdx+1} / ${total} 문제`;
+  document.getElementById('type-progress-fill').style.width=(tpIdx/total*100)+'%';
+
+  // 글자 칸 생성
+  const word=q.en.toLowerCase();
+  const boxes=document.getElementById('letter-boxes');
+  boxes.innerHTML='';
+  for(let i=0;i<word.length;i++){
+    const inp=document.createElement('input');
+    inp.className='letter-box';
+    inp.maxLength=1;
+    inp.dataset.idx=i;
+    // 이전 입력값 복원
+    if(tpAnswers[tpIdx]&&tpAnswers[tpIdx][i]){
+      inp.value=tpAnswers[tpIdx][i];
+      inp.classList.add('filled');
+    }
+    inp.addEventListener('keydown',(e)=>handleLetterKey(e,i,word.length));
+    inp.addEventListener('input',(e)=>handleLetterInput(e,i,word.length));
+    boxes.appendChild(inp);
+  }
+
+  // 이전/다음 버튼
+  document.getElementById('type-prev-btn').disabled=tpIdx===0;
+  document.getElementById('type-next-btn').textContent=tpIdx===total-1?'✅ 채점하기':'다음 →';
+  document.getElementById('type-next-btn').className='btn '+(tpIdx===total-1?'btn-primary':'btn-type');
+
+  renderTypeDots();
+  // 첫 칸에 포커스
+  setTimeout(()=>{const first=boxes.querySelector('.letter-box');if(first)first.focus();},100);
+}
+
+function handleLetterInput(e,i,len){
+  const inp=e.target;
+  const val=inp.value.replace(/[^a-zA-Z]/g,'').toLowerCase();
+  inp.value=val?val[val.length-1]:'';
+  // 현재 답변 저장
+  saveTypeAnswer();
+  if(inp.value){
+    inp.classList.add('filled');
+    if(i<len-1)focusLetterBox(i+1);
+  }else{
+    inp.classList.remove('filled');
+  }
+}
+
+function handleLetterKey(e,i,len){
+  if(e.key==='Backspace'&&!e.target.value&&i>0){
+    e.preventDefault();
+    focusLetterBox(i-1);
+    const prev=getLetterBox(i-1);
+    if(prev){prev.value='';prev.classList.remove('filled');saveTypeAnswer();}
+  }else if(e.key==='ArrowLeft'&&i>0){
+    e.preventDefault();focusLetterBox(i-1);
+  }else if(e.key==='ArrowRight'&&i<len-1){
+    e.preventDefault();focusLetterBox(i+1);
+  }else if(e.key==='Enter'){
+    e.preventDefault();typeNextQ();
+  }
+}
+
+function focusLetterBox(i){
+  const b=getLetterBox(i);if(b)b.focus();
+}
+function getLetterBox(i){
+  return document.querySelector(`.letter-box[data-idx="${i}"]`);
+}
+
+function saveTypeAnswer(){
+  const boxes=document.querySelectorAll('.letter-box');
+  tpAnswers[tpIdx]=Array.from(boxes).map(b=>b.value||'').join('');
+}
+
+function jumpTypeQ(i){
+  saveTypeAnswer();
+  tpIdx=i;
+  renderTypeQ();
+}
+
+function typePrevQ(){
+  if(tpIdx===0)return;
+  saveTypeAnswer();
+  tpIdx--;
+  renderTypeQ();
+}
+
+function typeNextQ(){
+  saveTypeAnswer();
+  if(tpIdx<tpQuestions.length-1){
+    tpIdx++;
+    renderTypeQ();
+  }else{
+    // 마지막 문제 → 채점
+    clearInterval(timerInterval);stopBGM();
+    elapsedSec=Math.floor((Date.now()-startTs)/1000);
+    gradeTyping();
+  }
+}
+
+function gradeTyping(){
+  let correct=0,wrong=0;
+  const attempts=tpQuestions.map((q,i)=>{
+    const answer=(tpAnswers[i]||'').toLowerCase().trim();
+    const expected=q.en.toLowerCase();
+    const ok=answer===expected;
+    if(ok)correct++;else wrong++;
+    return{kr:q.kr,correct:q.en,typed:tpAnswers[i]||'',ok};
+  });
+  // 결과 화면으로
+  const score=Math.round(correct/tpQuestions.length*100);
+  const tries=tpQuestions.length;
+  const wrongs=wrong;
+  const acc=Math.round(correct/tpQuestions.length*100);
+  let grade,label;
+  if(score>=95&&wrongs===0){grade='S';label='완벽해요! 하나도 안 틀렸어요!';}
+  else if(score>=80){grade='A';label='훌륭해요! 거의 다 맞혔네요!';}
+  else if(score>=60){grade='B';label='잘 했어요! 조금만 더 연습해봐요.';}
+  else if(score>=40){grade='C';label='괜찮아요. 다시 도전해봐요!';}
+  else{grade='D';label='다시 열심히 해봐요!';}
+
+  // showResult 직접 호출 대신 필요한 전역변수 세팅 후 공통 결과 처리
+  _showCustomResult('type',score,tries,wrongs,acc,grade,label,attempts,correct,tpQuestions.length);
+}
+
+/* ═══════════════════════════
+   MEANING GAME (영어 보고 뜻 맞추기)
+═══════════════════════════ */
+let mnQuestions=[],mnIdx=0,mnScore=0,mnWrongs=0,mnAnswered=false,mnAttempts=[];
+
+function initMeaning(){
+  clearInterval(timerInterval);
+  lastGameMode='meaning';
+  mnQuestions=shuffle(words.map(w=>{
+    // 정답(한국어) 1개 + 나머지 단어에서 랜덤 3개
+    const others=shuffle(words.filter(x=>x.kr!==w.kr).map(x=>x.kr));
+    const choices=shuffle([w.kr,...others.slice(0,3)]);
+    return{en:w.en,correct:w.kr,choices};
+  }));
+  mnIdx=0;mnScore=0;mnWrongs=0;mnAttempts=[];
+  startTs=Date.now();totalTime=calcTime(words.length);timeLeft=totalTime;
+  document.getElementById('meaning-score-row').innerHTML=mnQuestions.map((_,i)=>`<div class="spell-score-dot" id="mdot-${i}"></div>`).join('');
+  document.getElementById('meaning-teacher-btns').style.display=isStudentMode?'none':'flex';
+  document.getElementById('timeout-overlay').classList.remove('show');
+  showScreen('meaning-game-screen');
+  renderMeaningQ();updateTimerUI('meaning');
+  stopBGM();sfxGameStart();setTimeout(startBGM,600);
+  startTimer('meaning');
+}
+
+function renderMeaningQ(){
+  const q=mnQuestions[mnIdx];
+  mnAnswered=false;
+  document.getElementById('meaning-q-word').textContent=q.en;
+  document.getElementById('meaning-q-counter').textContent=`${mnIdx+1} / ${mnQuestions.length}`;
+  document.getElementById('meaning-progress-text').textContent=`${mnIdx+1} / ${mnQuestions.length} 문제`;
+  document.getElementById('meaning-progress-fill').style.width=(mnIdx/mnQuestions.length*100)+'%';
+  const cc=document.getElementById('meaning-choices');cc.innerHTML='';
+  q.choices.forEach(ch=>{
+    const btn=document.createElement('div');btn.className='meaning-choice';
+    btn.textContent=ch;
+    btn.onclick=()=>meaningChoose(btn,ch,q.correct);
+    cc.appendChild(btn);
+  });
+}
+
+function meaningChoose(btn,chosen,correct){
+  if(mnAnswered)return;mnAnswered=true;
+  const isOk=chosen===correct;
+  const dot=document.getElementById('mdot-'+mnIdx);
+  if(isOk){btn.classList.add('mc-correct');mnScore++;if(dot)dot.classList.add('ok');sfxCorrect();}
+  else{
+    btn.classList.add('mc-wrong');mnWrongs++;if(dot)dot.classList.add('fail');sfxWrong();
+    document.querySelectorAll('.meaning-choice').forEach(b=>{
+      if(b.textContent===correct)b.classList.add('mc-reveal');
+      else if(b!==btn)b.classList.add('mc-disabled');
+    });
+  }
+  mnAttempts.push({en:mnQuestions[mnIdx].en,correct,chosen,ok:isOk});
+  setTimeout(()=>{
+    mnIdx++;
+    if(mnIdx>=mnQuestions.length){
+      clearInterval(timerInterval);stopBGM();
+      elapsedSec=Math.floor((Date.now()-startTs)/1000);
+      document.getElementById('meaning-progress-fill').style.width='100%';
+      sfxGameClear();
+      setTimeout(()=>showResult('meaning'),400);
+    }else renderMeaningQ();
+  },900);
+}
+
+
+function _showCustomResult(mode,score,tries,wrongs,acc,grade,label,attempts,correctQ,totalQ){
+  const wrap=document.getElementById('result-grade-wrap');
+  wrap.className='result-grade-wrap';wrap.style.background='linear-gradient(135deg,#0891b2,#06b6d4)';
+  document.getElementById('result-retry-btn').className='btn btn-type';
+  document.getElementById('log-title').textContent='타이핑 기록';
+  document.getElementById('result-grade').textContent=grade;
+  document.getElementById('result-label').textContent=label;
+  document.getElementById('result-score').textContent=correctQ+'/'+totalQ;
+  document.getElementById('r-time').textContent=elapsedSec+'s';
+  document.getElementById('r-tries').textContent=tries;
+  document.getElementById('r-wrong').textContent=wrongs;
+  document.getElementById('r-acc').textContent=acc+'%';
+
+  const teacherBtns=document.getElementById('teacher-result-btns');
+  const studentBtns=document.getElementById('student-result-btns');
+  const nameRow=document.getElementById('result-student-name-row');
+  const submitRow=document.getElementById('result-submit-row');
+  const submitStatus=document.getElementById('result-submit-status');
+
+  if(isStudentMode&&studentName){
+    teacherBtns.style.display='none';studentBtns.style.display='flex';
+    nameRow.style.display='block';document.getElementById('result-student-name').textContent=studentName;
+    submitRow.style.display='block';submitStatus.textContent='📤 결과를 선생님께 전송 중...';submitStatus.style.color='var(--muted)';
+    const resultData={studentName,mode,score,elapsedSec,tries,wrongs,acc,grade,attempts,totalQ,correctQ,className:studentClassName,startedAt:new Date(startTs).toISOString(),submittedAt:new Date().toISOString()};
+    submitResult(resultData).then(()=>{
+      submitStatus.textContent=getFirebaseURL()?'✅ 선생님께 결과가 전달됐어요!':'✅ 결과가 저장됐어요!';
+      submitStatus.style.color='var(--green)';
+    }).catch(()=>{submitStatus.textContent='✅ 저장됨 (Firebase 전송 실패)';submitStatus.style.color='var(--gold)';});
+  }else{
+    teacherBtns.style.display='flex';studentBtns.style.display='none';
+    nameRow.style.display='none';submitRow.style.display='none';
+  }
+
+  const ll=document.getElementById('log-list');ll.innerHTML='';
+  attempts.forEach(a=>{
+    const row=document.createElement('div');row.className='log-row';
+    row.innerHTML=`<span style="flex:1"><strong>${escHtml(a.kr)}</strong> → <span style="color:${a.ok?'var(--green)':'var(--red)'};">${escHtml(a.typed)||'(미입력)'}</span>${a.ok?'':' <span style="color:var(--muted);font-size:11px;">(정답: '+escHtml(a.correct)+')</span>'}</span><span class="${a.ok?'log-ok':'log-fail'}">${a.ok?'✓':'✗'}</span>`;
+    ll.appendChild(row);
+  });
+  showScreen('result-screen');
 }
 
 /* ═══════════════════════════
