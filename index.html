@@ -1584,14 +1584,39 @@ function renderDashboard(){
 function openDetail(d){
   const s=d.score||0;
   const scoreClass=s>=95?'score-s':s>=80?'score-a':s>=60?'score-b':s>=40?'score-c':'score-d';
-  const modeLabel=d.mode==='match'?'🃏 매칭':'✏️ 스펠링';
+  const modeLabels={match:'🃏 매칭',spell:'✏️ 스펠링',type:'⌨️ 타이핑',meaning:'🔍 뜻맞추기'};
+  const modeLabel=modeLabels[d.mode]||d.mode;
+  const modeTagClass={match:'mode-match',spell:'mode-spell',type:'mode-type',meaning:'mode-meaning'}[d.mode]||'mode-match';
   document.getElementById('detail-modal-title').textContent=`${escHtml(d.studentName||'익명')} 님의 상세 기록`;
   const atts=d.attempts||[];
   let rows='';
-  if(atts.length===0){rows=`<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">상세 기록 없음 (구버전 데이터)</div>`;}
-  else if(d.mode==='match'){rows=atts.map(a=>`<div class="log-row"><span style="flex:1;">${escHtml(a.kr)} — <strong>${escHtml(a.en)}</strong></span><span class="${a.ok?'log-ok':'log-fail'}">${a.ok?'✓':'✗'}</span></div>`).join('');}
-  else{rows=atts.map(a=>`<div class="log-row" style="flex-direction:column;align-items:flex-start;gap:2px;"><div style="display:flex;width:100%;justify-content:space-between;"><strong>${escHtml(a.kr)}</strong><span class="${a.ok?'log-ok':'log-fail'}">${a.ok?'✓':'✗'}</span></div><div style="font-size:12px;">선택: <span style="color:${a.ok?'var(--green)':'var(--red)'};">${escHtml(a.chosen)}</span>${a.ok?'':'&nbsp;&nbsp;정답: <span style="color:var(--green);font-weight:800;">'+escHtml(a.correct)+'</span>'}</div></div>`).join('');}
-  document.getElementById('detail-modal-body').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;"><span class="score-pill ${scoreClass}">${d.totalQ?`${(d.correctQ!=null?d.correctQ:d.totalQ!=null?d.totalQ-(d.wrongs||0):'-')}/${d.totalQ} (${s}점)`:s+'점'} ${d.grade||''}</span>${d.className?`<span class="mode-tag" style="background:var(--purple-l);color:var(--purple);">📚 ${escHtml(d.className)}</span>`:''}<span class="mode-tag ${d.mode==='match'?'mode-match':'mode-spell'}">${modeLabel}</span><span style="font-size:12px;color:var(--muted);font-weight:600;align-self:center;">⏱ ${d.elapsedSec||0}초 &nbsp;❌ ${d.wrongs||0}번</span></div><div style="font-size:11px;color:var(--light);margin-bottom:12px;font-weight:600;">📅 ${fmtDate(d.startedAt)||'?'} &nbsp;🕐 시작 ${fmtTime(d.startedAt)||'?'} → 제출 ${fmtTime(d.submittedAt)||'?'}</div><div class="log-panel" style="margin:0;max-height:360px;overflow-y:auto;"><div class="log-title">${atts.length}개 문제 기록</div>${rows}</div>`;
+  if(atts.length===0){
+    rows='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">상세 기록 없음</div>';
+  }else if(d.mode==='match'){
+    rows=atts.map(a=>'<div class="log-row"><span style="flex:1;">'+escHtml(a.kr)+' — <strong>'+escHtml(a.en)+'</strong></span><span class="'+(a.ok?'log-ok':'log-fail')+'">'+(a.ok?'✓':'✗')+'</span></div>').join('');
+  }else if(d.mode==='type'){
+    rows=atts.map(a=>'<div class="log-row" style="flex-direction:column;align-items:flex-start;gap:2px;"><div style="display:flex;width:100%;justify-content:space-between;align-items:center;"><strong>'+escHtml(a.kr)+'</strong><span class="'+(a.ok?'log-ok':'log-fail')+'">'+(a.ok?'✓':'✗')+'</span></div><div style="font-size:12px;">입력: <span style="color:'+(a.ok?'var(--green)':'var(--red)')+';">'+escHtml(a.typed||'(미입력)')+'</span>'+(a.ok?'':'&nbsp;&nbsp;정답: <span style="color:var(--green);font-weight:800;">'+escHtml(a.correct)+'</span>')+'</div></div>').join('');
+  }else if(d.mode==='meaning'){
+    rows=atts.map(a=>'<div class="log-row" style="flex-direction:column;align-items:flex-start;gap:2px;"><div style="display:flex;width:100%;justify-content:space-between;align-items:center;"><strong>'+escHtml(a.en)+'</strong><span class="'+(a.ok?'log-ok':'log-fail')+'">'+(a.ok?'✓':'✗')+'</span></div><div style="font-size:12px;">선택: <span style="color:'+(a.ok?'var(--green)':'var(--red)')+';">'+escHtml(a.chosen)+'</span>'+(a.ok?'':'&nbsp;&nbsp;정답: <span style="color:var(--green);font-weight:800;">'+escHtml(a.correct)+'</span>')+'</div></div>').join('');
+  }else{
+    rows=atts.map(a=>'<div class="log-row" style="flex-direction:column;align-items:flex-start;gap:2px;"><div style="display:flex;width:100%;justify-content:space-between;align-items:center;"><strong>'+escHtml(a.kr)+'</strong><span class="'+(a.ok?'log-ok':'log-fail')+'">'+(a.ok?'✓':'✗')+'</span></div><div style="font-size:12px;">선택: <span style="color:'+(a.ok?'var(--green)':'var(--red)')+';">'+escHtml(a.chosen)+'</span>'+(a.ok?'':'&nbsp;&nbsp;정답: <span style="color:var(--green);font-weight:800;">'+escHtml(a.correct)+'</span>')+'</div></div>').join('');
+  }
+  const correctQ=d.correctQ!=null?d.correctQ:(d.totalQ!=null?d.totalQ-(d.wrongs||0):null);
+  const scoreText=d.totalQ&&correctQ!=null?(correctQ+'/'+d.totalQ+' ('+s+'점)'):(s+'점');
+  document.getElementById('detail-modal-body').innerHTML=
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">'+
+    '<span class="score-pill '+scoreClass+'">'+scoreText+' '+(d.grade||'')+'</span>'+
+    '<span class="mode-tag '+modeTagClass+'">'+modeLabel+'</span>'+
+    (d.className?'<span class="mode-tag" style="background:var(--purple-l);color:var(--purple);">📚 '+escHtml(d.className)+'</span>':'')+
+    '<span style="font-size:12px;color:var(--muted);font-weight:600;align-self:center;">⏱ '+(d.elapsedSec||0)+'초 &nbsp;❌ '+(d.wrongs||0)+'번</span>'+
+    '</div>'+
+    '<div style="font-size:11px;color:var(--light);margin-bottom:12px;font-weight:600;">'+
+    '📅 '+(fmtDate(d.startedAt)||'?')+' &nbsp;🕐 시작 '+(fmtTime(d.startedAt)||'?')+' → 제출 '+(fmtTime(d.submittedAt)||'?')+
+    '</div>'+
+    '<div class="log-panel" style="margin:0;max-height:360px;overflow-y:auto;">'+
+    '<div class="log-title">'+atts.length+'개 문제 기록</div>'+
+    rows+
+    '</div>';
   document.getElementById('detail-modal').classList.add('show');
 }
 async function clearDashboard(){
