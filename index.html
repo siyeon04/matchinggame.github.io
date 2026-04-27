@@ -378,6 +378,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .meaning-choice.mc-reveal{border-color:var(--green);background:var(--green-l);color:#158a4a;pointer-events:none;}
 .mode-type{background:#e0f9ff;color:#0891b2;}
 .mode-meaning{background:var(--purple-l);color:#9b6ef7;}
+
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
 </style>
 </head>
 <body>
@@ -679,17 +681,34 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
   </div>
   <div class="progress-bar"><div class="progress-fill" id="type-progress-fill" style="width:0%;background:linear-gradient(90deg,#0891b2,#06b6d4);"></div></div>
+
   <div class="type-question">
     <div class="type-q-label">이 단어를 영어로 입력하세요</div>
     <div class="type-q-word" id="type-q-word">사과</div>
     <div class="type-q-counter" id="type-q-counter">1 / 5</div>
   </div>
+
+  <!-- 문제 번호 점 -->
   <div class="type-q-dots" id="type-q-dots"></div>
-  <div class="letter-boxes" id="letter-boxes"></div>
+
+  <!-- 동적 글자 칸 -->
+  <div class="letter-boxes" id="letter-boxes" style="min-height:62px;"></div>
+
+  <!-- 숨겨진 실제 입력 -->
+  <input id="type-hidden-input" type="text"
+    autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+    style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;"
+    oninput="onTypeInput(event)" onkeydown="onTypeKeydown(event)"/>
+
+  <div style="text-align:center;font-size:12px;color:var(--muted);font-weight:600;margin:6px 0 12px;">
+    화면을 탭하거나 클릭하면 키보드가 열려요
+  </div>
+
   <div class="type-nav-btns">
     <button class="btn btn-secondary" style="flex:1;" onclick="typePrevQ()" id="type-prev-btn">← 이전</button>
     <button class="btn btn-type" style="flex:1;" onclick="typeNextQ()" id="type-next-btn">다음 →</button>
   </div>
+
   <div class="game-btns" id="type-teacher-btns" style="margin-top:10px;">
     <button class="btn btn-secondary" onclick="backToSetup()">← 처음으로</button>
   </div>
@@ -1933,17 +1952,19 @@ async function loadWordsByClsId(clsId,mode){
 }
 
 /* ═══════════════════════════
-   TYPING GAME (한 글자씩 입력)
+   TYPING GAME (동적 글자 칸)
 ═══════════════════════════ */
 let tpQuestions=[],tpIdx=0,tpAnswers=[],tpAnswered=0;
+let tpCurrentInput=''; // 현재 문제 입력 문자열
 
 function initType(){
   clearInterval(timerInterval);
   lastGameMode='type';
   tpQuestions=shuffle([...words]);
   tpIdx=0;
-  tpAnswers=tpQuestions.map(()=>''); // 각 문제 입력값 저장
+  tpAnswers=tpQuestions.map(()=>'');
   tpAnswered=0;
+  tpCurrentInput='';
   startTs=Date.now();totalTime=calcTime(words.length);timeLeft=totalTime;
   document.getElementById('type-teacher-btns').style.display=isStudentMode?'none':'flex';
   document.getElementById('timeout-overlay').classList.remove('show');
@@ -1952,13 +1973,22 @@ function initType(){
   updateTimerUI('type');
   stopBGM();sfxGameStart();setTimeout(startBGM,600);
   startTimer('type');
+  // 화면 탭하면 키보드 포커스
+  document.getElementById('type-game-screen').onclick=(e)=>{
+    if(!e.target.closest('button')) focusTypeInput();
+  };
+}
+
+function focusTypeInput(){
+  const inp=document.getElementById('type-hidden-input');
+  if(inp){inp.focus();}
 }
 
 function renderTypeDots(){
   const dots=document.getElementById('type-q-dots');
   dots.innerHTML=tpQuestions.map((q,i)=>{
     const cls=i===tpIdx?'current':tpAnswers[i]?'answered':'';
-    return `<div class="type-q-dot ${cls}" onclick="jumpTypeQ(${i})">${i+1}</div>`;
+    return '<div class="type-q-dot '+cls+'" onclick="jumpTypeQ('+i+')">'+(i+1)+'</div>';
   }).join('');
 }
 
@@ -1966,78 +1996,91 @@ function renderTypeQ(){
   const q=tpQuestions[tpIdx];
   const total=tpQuestions.length;
   document.getElementById('type-q-word').textContent=q.kr;
-  document.getElementById('type-q-counter').textContent=`${tpIdx+1} / ${total}`;
-  document.getElementById('type-progress-text').textContent=`${tpIdx+1} / ${total} 문제`;
+  document.getElementById('type-q-counter').textContent=(tpIdx+1)+' / '+total;
+  document.getElementById('type-progress-text').textContent=(tpIdx+1)+' / '+total+' 문제';
   document.getElementById('type-progress-fill').style.width=(tpIdx/total*100)+'%';
 
-  // 글자 칸 생성
-  const word=q.en.toLowerCase();
-  const boxes=document.getElementById('letter-boxes');
-  boxes.innerHTML='';
-  for(let i=0;i<word.length;i++){
-    const inp=document.createElement('input');
-    inp.className='letter-box';
-    inp.maxLength=1;
-    inp.dataset.idx=i;
-    // 이전 입력값 복원
-    if(tpAnswers[tpIdx]&&tpAnswers[tpIdx][i]){
-      inp.value=tpAnswers[tpIdx][i];
-      inp.classList.add('filled');
-    }
-    inp.addEventListener('keydown',(e)=>handleLetterKey(e,i,word.length));
-    inp.addEventListener('input',(e)=>handleLetterInput(e,i,word.length));
-    boxes.appendChild(inp);
-  }
+  // 저장된 입력값 복원
+  tpCurrentInput=tpAnswers[tpIdx]||'';
 
   // 이전/다음 버튼
   document.getElementById('type-prev-btn').disabled=tpIdx===0;
-  document.getElementById('type-next-btn').textContent=tpIdx===total-1?'✅ 채점하기':'다음 →';
-  document.getElementById('type-next-btn').className='btn '+(tpIdx===total-1?'btn-primary':'btn-type');
+  const isLast=tpIdx===total-1;
+  document.getElementById('type-next-btn').textContent=isLast?'✅ 채점하기':'다음 →';
+  document.getElementById('type-next-btn').className='btn '+(isLast?'btn-primary':'btn-type');
 
+  renderLetterBoxes();
   renderTypeDots();
-  // 첫 칸에 포커스
-  setTimeout(()=>{const first=boxes.querySelector('.letter-box');if(first)first.focus();},100);
+  // hidden input 초기화 후 포커스
+  const inp=document.getElementById('type-hidden-input');
+  if(inp){inp.value='';setTimeout(()=>inp.focus(),100);}
 }
 
-function handleLetterInput(e,i,len){
-  const inp=e.target;
-  const val=inp.value.replace(/[^a-zA-Z]/g,'').toLowerCase();
-  inp.value=val?val[val.length-1]:'';
-  // 현재 답변 저장
-  saveTypeAnswer();
-  if(inp.value){
-    inp.classList.add('filled');
-    if(i<len-1)focusLetterBox(i+1);
-  }else{
-    inp.classList.remove('filled');
+function renderLetterBoxes(){
+  const boxes=document.getElementById('letter-boxes');
+  boxes.innerHTML='';
+  if(!tpCurrentInput){
+    // 빈 placeholder 칸 하나 (시작 안내)
+    const ph=document.createElement('div');
+    ph.style.cssText='width:44px;height:54px;border:2.5px dashed var(--light);border-radius:var(--rx);display:flex;align-items:center;justify-content:center;color:var(--light);font-size:18px;cursor:text;';
+    ph.textContent='?';
+    ph.onclick=focusTypeInput;
+    boxes.appendChild(ph);
+    return;
   }
+  for(let i=0;i<tpCurrentInput.length;i++){
+    const box=document.createElement('div');
+    box.className='letter-box filled';
+    box.style.cssText='width:44px;height:54px;border:2.5px solid #0891b2;border-radius:var(--rx);background:#e0f9ff;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;color:#0891b2;font-family:"Nunito",monospace;cursor:text;user-select:none;';
+    box.textContent=tpCurrentInput[i]===' '?'_':tpCurrentInput[i];
+    box.onclick=focusTypeInput;
+    boxes.appendChild(box);
+  }
+  // 커서 칸 (입력 중 표시)
+  const cursor=document.createElement('div');
+  cursor.style.cssText='width:44px;height:54px;border:2.5px solid #0891b2;border-radius:var(--rx);background:#fff;display:flex;align-items:center;justify-content:center;cursor:text;animation:cursorBlink 1s infinite;';
+  cursor.innerHTML='<div style="width:2px;height:28px;background:#0891b2;border-radius:2px;"></div>';
+  cursor.onclick=focusTypeInput;
+  boxes.appendChild(cursor);
 }
 
-function handleLetterKey(e,i,len){
-  if(e.key==='Backspace'&&!e.target.value&&i>0){
+// CSS에 커서 깜빡임 추가는 별도 처리
+
+function onTypeInput(e){
+  // keydown에서 처리하므로 여기서는 hidden input 값만 비움
+  e.target.value='';
+}
+
+function onTypeKeydown(e){
+  // 일반 글자 입력
+  if(e.key.length===1&&/^[a-zA-Z ]$/.test(e.key)){
+    tpCurrentInput+=e.key.toLowerCase();
+    tpAnswers[tpIdx]=tpCurrentInput;
+    renderLetterBoxes();
     e.preventDefault();
-    focusLetterBox(i-1);
-    const prev=getLetterBox(i-1);
-    if(prev){prev.value='';prev.classList.remove('filled');saveTypeAnswer();}
-  }else if(e.key==='ArrowLeft'&&i>0){
-    e.preventDefault();focusLetterBox(i-1);
-  }else if(e.key==='ArrowRight'&&i<len-1){
-    e.preventDefault();focusLetterBox(i+1);
-  }else if(e.key==='Enter'){
-    e.preventDefault();typeNextQ();
+    return;
   }
-}
-
-function focusLetterBox(i){
-  const b=getLetterBox(i);if(b)b.focus();
-}
-function getLetterBox(i){
-  return document.querySelector(`.letter-box[data-idx="${i}"]`);
+  if(e.key==='Backspace'){
+    if(tpCurrentInput.length>0){
+      tpCurrentInput=tpCurrentInput.slice(0,-1);
+      tpAnswers[tpIdx]=tpCurrentInput;
+      renderLetterBoxes();
+    }
+    e.preventDefault();
+  }else if(e.key==='Enter'){
+    e.preventDefault();
+    typeNextQ();
+  }else if(e.key==='ArrowRight'){
+    e.preventDefault();
+    if(tpIdx<tpQuestions.length-1){saveTypeAnswer();tpIdx++;renderTypeQ();}
+  }else if(e.key==='ArrowLeft'){
+    e.preventDefault();
+    if(tpIdx>0){saveTypeAnswer();tpIdx--;renderTypeQ();}
+  }
 }
 
 function saveTypeAnswer(){
-  const boxes=document.querySelectorAll('.letter-box');
-  tpAnswers[tpIdx]=Array.from(boxes).map(b=>b.value||'').join('');
+  tpAnswers[tpIdx]=tpCurrentInput;
 }
 
 function jumpTypeQ(i){
@@ -2059,7 +2102,6 @@ function typeNextQ(){
     tpIdx++;
     renderTypeQ();
   }else{
-    // 마지막 문제 → 채점
     clearInterval(timerInterval);stopBGM();
     elapsedSec=Math.floor((Date.now()-startTs)/1000);
     gradeTyping();
@@ -2075,9 +2117,7 @@ function gradeTyping(){
     if(ok)correct++;else wrong++;
     return{kr:q.kr,correct:q.en,typed:tpAnswers[i]||'',ok};
   });
-  // 결과 화면으로
   const score=Math.round(correct/tpQuestions.length*100);
-  const tries=tpQuestions.length;
   const wrongs=wrong;
   const acc=Math.round(correct/tpQuestions.length*100);
   let grade,label;
@@ -2086,9 +2126,7 @@ function gradeTyping(){
   else if(score>=60){grade='B';label='잘 했어요! 조금만 더 연습해봐요.';}
   else if(score>=40){grade='C';label='괜찮아요. 다시 도전해봐요!';}
   else{grade='D';label='다시 열심히 해봐요!';}
-
-  // showResult 직접 호출 대신 필요한 전역변수 세팅 후 공통 결과 처리
-  _showCustomResult('type',score,tries,wrongs,acc,grade,label,attempts,correct,tpQuestions.length);
+  _showCustomResult('type',score,tpQuestions.length,wrongs,acc,grade,label,attempts,correct,tpQuestions.length);
 }
 
 /* ═══════════════════════════
