@@ -697,7 +697,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <!-- 숨겨진 실제 입력 -->
   <input id="type-hidden-input" type="text"
     autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-    style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;"
+    style="position:fixed;left:-9999px;top:50%;opacity:0;width:1px;height:1px;"
     oninput="onTypeInput(event)" onkeydown="onTypeKeydown(event)"/>
 
   <div style="text-align:center;font-size:12px;color:var(--muted);font-weight:600;margin:6px 0 12px;">
@@ -2047,17 +2047,40 @@ function renderLetterBoxes(){
 // CSS에 커서 깜빡임 추가는 별도 처리
 
 function onTypeInput(e){
-  // keydown에서 처리하므로 여기서는 hidden input 값만 비움
-  e.target.value='';
+  const inp=e.target;
+  const val=inp.value;
+  if(!val)return;
+  // 모바일: input 이벤트에서 새로 입력된 글자 처리
+  // keydown에서 이미 처리된 경우(desktop) 중복 방지
+  if(e.inputType==='deleteContentBackward'){
+    // 백스페이스는 keydown에서 처리하므로 여기서는 value만 동기화
+    inp.value='';
+    return;
+  }
+  // 모바일에서 입력된 문자 추출
+  const filtered=val.replace(/[^a-zA-Z ]/g,'').toLowerCase();
+  if(filtered){
+    tpCurrentInput+=filtered;
+    tpAnswers[tpIdx]=tpCurrentInput;
+    renderLetterBoxes();
+  }
+  inp.value=''; // 항상 비워서 누적 방지
 }
 
 function onTypeKeydown(e){
-  // 일반 글자 입력
+  // 일반 글자 입력 - desktop에서만 처리 (모바일은 onTypeInput에서)
   if(e.key.length===1&&/^[a-zA-Z ]$/.test(e.key)){
-    tpCurrentInput+=e.key.toLowerCase();
-    tpAnswers[tpIdx]=tpCurrentInput;
-    renderLetterBoxes();
-    e.preventDefault();
+    // 모바일이면 onTypeInput이 처리하므로 스킵
+    if(e.key!=='Enter'){
+      // desktop: keydown에서 처리
+      const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if(!isMobile){
+        tpCurrentInput+=e.key.toLowerCase();
+        tpAnswers[tpIdx]=tpCurrentInput;
+        renderLetterBoxes();
+        e.preventDefault();
+      }
+    }
     return;
   }
   if(e.key==='Backspace'){
