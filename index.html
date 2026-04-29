@@ -6,6 +6,7 @@
 <title>단어 게임</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
   --bg:#f0f4ff;--surface:#fff;--surface2:#f5f7ff;--surface3:#eef1fb;
@@ -482,9 +483,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </div>
   <div class="btn-row">
     <button class="btn btn-secondary" onclick="addClsWordRow()">＋ 단어 추가</button>
+    <label class="btn btn-secondary" style="cursor:pointer;text-align:center;">
+      📥 엑셀 파일 가져오기
+      <input type="file" id="excel-upload" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importExcel(event)"/>
+    </label>
     <button class="btn btn-primary" onclick="saveClassNow()">💾 저장</button>
   </div>
   <div class="cls-save-status" id="cls-save-status"></div>
+  <!-- 엑셀 형식 안내 -->
+  <div style="background:var(--accent-l);border:1.5px solid var(--border);border-radius:var(--rx);padding:10px 14px;font-size:12px;color:var(--accent);font-weight:600;margin-top:8px;line-height:1.8;">
+    📋 <strong>엑셀 형식:</strong> A열 = 한국어 뜻, B열 = 영어 단어<br>
+    첫 번째 행이 헤더(제목)면 자동으로 건너뛰어요.
+  </div>
 </div>
 
 <!-- NAME SCREEN (학생) -->
@@ -569,7 +579,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div class="counter-display" id="count-display">5</div>
         <button class="counter-btn" onclick="changeCount(+1)">+</button>
       </div>
-      <div class="counter-meta">개 &nbsp;·&nbsp; 최소 1 · 최대 20</div>
+      <div class="counter-meta">개 &nbsp;·&nbsp; 최소 1 · 최대 40</div>
     </div>
     <div class="timer-hint" id="timer-hint-box">⏱&nbsp;<span id="timer-hint-text">제한 시간: 20초</span></div>
     <div class="timer-settings-row">
@@ -1003,7 +1013,7 @@ function updateSetupUI(mode){
   updateTimerHint(selectedCount);
 }
 function changeCount(delta){
-  const next=Math.min(20,Math.max(1,selectedCount+delta));
+  const next=Math.min(40,Math.max(1,selectedCount+delta));
   if(next===selectedCount)return;
   selectedCount=next;
   document.getElementById('count-display').textContent=next;
@@ -1751,17 +1761,91 @@ function collectClsData(){
   return{name:name||'이름 없는 클래스',words,updatedAt:new Date().toISOString()};
 }
 function autoSaveClass(){clearTimeout(autoSaveTimer);autoSaveTimer=setTimeout(saveClassNow,1500);}
+
+/* ── 엑셀 파일 가져오기 ── */
+function importExcel(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const statusEl=document.getElementById('cls-save-status');
+  statusEl.textContent='📥 파일 읽는 중...';
+  statusEl.style.color='var(--muted)';
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=new Uint8Array(e.target.result);
+      const wb=XLSX.read(data,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(!rows||rows.length===0){
+        statusEl.textContent='❌ 파일이 비어있어요.';
+        statusEl.style.color='var(--red)';
+        return;
+      }
+      // 헤더 행 감지
+      let startRow=0;
+      const fr=rows[0];
+      if(fr&&fr[0]&&fr[1]){
+        const a=String(fr[0]).trim().toLowerCase();
+        const b=String(fr[1]).trim().toLowerCase();
+        if(a==='한국어'||a==='뜻'||a==='korean'||b==='영어'||b==='english'||b==='단어'||b.includes('eng'))startRow=1;
+      }
+      const words=[];
+      for(let i=startRow;i<rows.length;i++){
+        const kr=String(rows[i][0]||'').trim();
+        const en=String(rows[i][1]||'').trim();
+        if(kr&&en)words.push({kr,en});
+      }
+      if(words.length===0){
+        statusEl.textContent='❌ 단어를 찾을 수 없어요. A열=한국어, B열=영어 형식인지 확인해주세요.';
+        statusEl.style.color='var(--red)';
+        return;
+      }
+      const existing=document.querySelectorAll('#cls-word-inputs .word-row').length;
+      let replace=true;
+      if(existing>0){
+        replace=confirm('현재 입력된 단어 '+existing+'개가 있어요.\n\n확인: 엑셀 단어로 교체\n취소: 기존 단어에 추가');
+      }
+      if(replace)document.getElementById('cls-word-inputs').innerHTML='';
+      words.forEach(w=>addClsWordRow(w.kr,w.en));
+      updateClsWordCount();
+      autoSaveClass();
+      statusEl.textContent='✅ '+words.length+'개 단어를 가져왔어요!';
+      statusEl.style.color='var(--green)';
+      event.target.value='';
+    }catch(err){
+      statusEl.textContent='❌ 파일 읽기 실패: '+err.message;
+      statusEl.style.color='var(--red)';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 async function saveClassNow(){
   if(!currentClsId)return;
   const data=collectClsData();
   const statusEl=document.getElementById('cls-save-status');
   statusEl.textContent='저장 중...';statusEl.style.color='var(--muted)';
+  // 항상 localStorage에 먼저 저장
   try{
-    const fbUrl=getFirebaseURL();
-    if(fbUrl)await saveClassToFirebase(currentClsId,data);
-    else{const all=JSON.parse(localStorage.getItem('wordgame_classes')||'{}');all[currentClsId]=data;localStorage.setItem('wordgame_classes',JSON.stringify(all));}
-    statusEl.textContent='✅ 저장됨 ('+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+')';statusEl.style.color='var(--green)';
-  }catch(e){statusEl.textContent='❌ 저장 실패';statusEl.style.color='var(--red)';}
+    const all=JSON.parse(localStorage.getItem('wordgame_classes')||'{}');
+    all[currentClsId]=data;
+    localStorage.setItem('wordgame_classes',JSON.stringify(all));
+  }catch(e){}
+  // Firebase가 연결되어 있으면 추가로 저장
+  const fbUrl=getFirebaseURL();
+  if(fbUrl){
+    try{
+      await saveClassToFirebase(currentClsId,data);
+      statusEl.textContent='✅ 저장됨 ('+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+')';
+      statusEl.style.color='var(--green)';
+    }catch(e){
+      statusEl.textContent='⚠️ Firebase 저장 실패 — 이 기기에만 저장됐어요.';
+      statusEl.style.color='var(--gold)';
+    }
+  }else{
+    statusEl.textContent='✅ 저장됨 ('+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+') — Firebase 미연결';
+    statusEl.style.color='var(--green)';
+  }
 }
 async function deleteClass(id,name){
   if(!confirm(`"${name}" 클래스를 삭제할까요?`))return;
