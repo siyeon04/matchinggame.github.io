@@ -2142,7 +2142,7 @@ function onTypeInput(e){
     return;
   }
   // 모바일에서 입력된 문자 추출
-  const filtered=val.replace(/[^a-zA-Z ]/g,'').toLowerCase();
+  const filtered=val.replace(/[^a-zA-Z ',\.\-!?]/g,'').toLowerCase();
   if(filtered){
     tpCurrentInput+=filtered;
     tpAnswers[tpIdx]=tpCurrentInput;
@@ -2153,7 +2153,7 @@ function onTypeInput(e){
 
 function onTypeKeydown(e){
   // 일반 글자 입력 - desktop에서만 처리 (모바일은 onTypeInput에서)
-  if(e.key.length===1&&/^[a-zA-Z ]$/.test(e.key)){
+  if(e.key.length===1&&/^[a-zA-Z ',.\-!?']$/.test(e.key)){
     // 모바일이면 onTypeInput이 처리하므로 스킵
     if(e.key!=='Enter'){
       // desktop: keydown에서 처리
