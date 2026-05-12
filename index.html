@@ -382,7 +382,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 @keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
 
-/* ── FILL GAME ── */
+/* ── COMPLETE GAME ── */
 .tab-btn.active-fill{background:#ea580c;color:#fff;box-shadow:0 2px 10px rgba(234,88,12,.3);}
 .setup-logo-text.fill-color{color:#ea580c;}
 .btn-fill{background:#ea580c;color:#fff;width:100%;box-shadow:0 4px 18px rgba(234,88,12,.35);}
@@ -463,9 +463,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
     <div class="game-card" style="border-color:rgba(234,88,12,.2);" onclick="goSetup('fill')">
       <div class="game-card-icon">🔡</div>
-      <div class="game-card-title">알파벳 채우기</div>
+      <div class="game-card-title">단어 완성하기</div>
       <div class="game-card-desc">빈칸에 들어갈<br>알파벳을 맞추기</div>
-      <div class="game-card-badge" style="background:#fff7ed;color:#ea580c;">FILL</div>
+      <div class="game-card-badge" style="background:#fff7ed;color:#ea580c;">COMPLETE</div>
     </div>
   </div>
   <div class="panel" style="padding:16px 20px;">
@@ -789,11 +789,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </div>
 
 
-<!-- ══ FILL GAME ══ -->
+<!-- ══ COMPLETE GAME ══ -->
 <div id="fill-game-screen" class="screen">
   <div class="game-header">
     <div>
-      <div class="game-title" style="color:#ea580c;">🔡 알파벳 채우기</div>
+      <div class="game-title" style="color:#ea580c;">🔡 단어 완성하기</div>
       <div class="game-progress-sub" id="fill-progress-text">1 / 0 문제</div>
     </div>
     <div class="timer-ring-wrap">
@@ -810,13 +810,16 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="fill-question">
       <div class="fill-q-label">빈칸에 알파벳을 입력하세요</div>
       <div class="fill-q-kr" id="fill-q-kr">사과</div>
-      <div class="fill-word-display" id="fill-word-display"></div>
+      <div class="fill-word-display" id="fill-word-display" style="overflow-x:auto;max-width:100%;justify-content:flex-start;padding:4px 2px;"></div>
       <div class="fill-q-counter" id="fill-q-counter">1 / 5</div>
     </div>
     <div class="spell-score-row" id="fill-score-row"></div>
+    <div id="fill-feedback" style="text-align:center;font-size:14px;font-weight:700;min-height:20px;"></div>
   </div>
 
-  <div class="game-btns" id="fill-teacher-btns" style="margin-top:20px;">
+  <button class="btn btn-fill" id="fill-next-btn" onclick="submitFillAll()" style="margin-top:8px;" disabled>다음 →</button>
+
+  <div class="game-btns" id="fill-teacher-btns" style="margin-top:10px;">
     <button class="btn btn-secondary" onclick="backToSetup()">← 처음으로</button>
     <button class="btn btn-secondary" onclick="initFill()">↺ 다시 시작</button>
   </div>
@@ -1065,7 +1068,7 @@ function updateSetupUI(mode){
     spell:{tab:'active-spell',icon:'✏️',title:'스펠링 게임',sub:'뜻을 보고 올바른 스펠링 고르기',btnText:'✏️ 스펠링 게임 시작',btnClass:'btn-orange',logoColor:'spell-color'},
     type:{tab:'active-type',icon:'⌨️',title:'타이핑 게임',sub:'뜻을 보고 한 글자씩 직접 입력',btnText:'⌨️ 타이핑 게임 시작',btnClass:'btn-type',logoColor:'type-color'},
     meaning:{tab:'active-meaning',icon:'🔍',title:'뜻 맞추기',sub:'영어 단어를 보고 올바른 뜻 고르기',btnText:'🔍 뜻 맞추기 시작',btnClass:'btn-meaning',logoColor:'meaning-color'},
-    fill:{tab:'active-fill',icon:'🔡',title:'알파벳 채우기',sub:'빈칸에 들어갈 알파벳을 맞추기',btnText:'🔡 알파벳 채우기 시작',btnClass:'btn-fill',logoColor:'fill-color'},
+    fill:{tab:'active-fill',icon:'🔡',title:'단어 완성하기',sub:'빈칸에 들어갈 알파벳을 맞추기',btnText:'🔡 단어 완성하기 시작',btnClass:'btn-fill',logoColor:'fill-color'},
   };
   const c=configs[mode]||configs.match;
   ['match','spell','type','meaning','fill'].forEach(k=>{
@@ -1130,7 +1133,7 @@ function startGame(){
 ═══════════════════════════ */
 function showNameScreen(mode){
   pendingGameMode=mode;
-  const modeLabels={match:'🃏 매칭 게임',spell:'✏️ 스펠링 게임',type:'⌨️ 타이핑 게임',meaning:'🔍 뜻 맞추기',fill:'🔡 알파벳 채우기'};
+  const modeLabels={match:'🃏 매칭 게임',spell:'✏️ 스펠링 게임',type:'⌨️ 타이핑 게임',meaning:'🔍 뜻 맞추기',fill:'🔡 단어 완성하기'};
   document.getElementById('name-mode-label').textContent=modeLabels[mode]||mode;
   document.getElementById('student-name-input').value='';
   document.getElementById('name-err').textContent='';
@@ -2437,7 +2440,7 @@ function _showCustomResult(mode,score,tries,wrongs,acc,grade,label,attempts,corr
 }
 
 /* ═══════════════════════════
-   FILL GAME (알파벳 채우기)
+   COMPLETE GAME (단어 완성하기)
 ═══════════════════════════ */
 let flQuestions=[],flIdx=0,flScore=0,flWrongs=0,flAttempts=[];
 let flCurrentQ=null;
