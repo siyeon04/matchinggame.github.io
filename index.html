@@ -390,7 +390,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .fill-question{background:linear-gradient(135deg,#ea580c,#f97316);border-radius:var(--r);padding:24px 20px;text-align:center;box-shadow:0 6px 24px rgba(234,88,12,.25);margin-bottom:16px;}
 .fill-q-label{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:8px;}
 .fill-q-kr{font-size:28px;font-weight:900;color:#fff;margin-bottom:10px;}
-.fill-word-display{display:flex;gap:4px;justify-content:center;align-items:center;flex-wrap:nowrap;margin-top:8px;overflow-x:auto;padding:4px 8px;box-sizing:border-box;}
+.fill-word-display{display:inline-flex;gap:4px;align-items:center;flex-wrap:nowrap;margin-top:8px;}
 .fill-letter{font-size:22px;font-weight:900;color:#fff;font-family:'Nunito',monospace;min-width:28px;text-align:center;}
 .fill-blank{width:36px;height:38px;border:3px solid rgba(255,255,255,.9);border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;font-family:'Nunito',monospace;}
 .fill-blank.active{background:rgba(255,255,255,.35);box-shadow:0 0 0 3px rgba(255,255,255,.5);}
@@ -810,7 +810,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="fill-question">
       <div class="fill-q-label">빈칸에 알파벳을 입력하세요</div>
       <div class="fill-q-kr" id="fill-q-kr">사과</div>
-      <div class="fill-word-display" id="fill-word-display" style="overflow-x:auto;max-width:100%;justify-content:flex-start;padding:4px 2px;"></div>
+      <div style="display:flex;justify-content:center;width:100%;overflow-x:auto;"><div class="fill-word-display" id="fill-word-display"></div></div>
       <div class="fill-q-counter" id="fill-q-counter">1 / 5</div>
     </div>
     <div class="spell-score-row" id="fill-score-row"></div>
@@ -2444,6 +2444,7 @@ function _showCustomResult(mode,score,tries,wrongs,acc,grade,label,attempts,corr
 ═══════════════════════════ */
 let flQuestions=[],flIdx=0,flScore=0,flWrongs=0,flAttempts=[];
 let flCurrentQ=null;
+let flSubmitted=false;
 
 function countAlpha(word){ return word.replace(/[^a-zA-Z]/g,'').length; }
 
@@ -2498,6 +2499,7 @@ function renderFillQ(){
   // 단어 표시 + 빈칸을 input으로
   const display=document.getElementById('fill-word-display');
   display.innerHTML='';
+  display.style.cssText='display:inline-flex;flex-wrap:nowrap;gap:4px;align-items:center;padding:6px 4px;overflow-x:auto;max-width:100%;';
   let inputCount=0;
   for(let i=0;i<q.en.length;i++){
     const ch=q.en[i];
@@ -2537,6 +2539,15 @@ function renderFillQ(){
 
 function getFillInputs(){
   return Array.from(document.querySelectorAll('.fill-box-input'));
+}
+
+function updateFillNextBtn(){
+  const inputs=getFillInputs();
+  const allFilled=inputs.length>0&&inputs.every(inp=>inp.value.trim()!=='');
+  const nextBtn=document.getElementById('fill-next-btn');
+  if(!nextBtn)return;
+  nextBtn.disabled=!allFilled||flSubmitted;
+  nextBtn.style.opacity=(allFilled&&!flSubmitted)?'1':'0.45';
 }
 
 function onFillBoxInput(e,inp){
