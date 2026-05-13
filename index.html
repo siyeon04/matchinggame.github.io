@@ -390,7 +390,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .fill-question{background:linear-gradient(135deg,#ea580c,#f97316);border-radius:var(--r);padding:24px 20px;text-align:center;box-shadow:0 6px 24px rgba(234,88,12,.25);margin-bottom:16px;}
 .fill-q-label{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:8px;}
 .fill-q-kr{font-size:28px;font-weight:900;color:#fff;margin-bottom:10px;}
-.fill-word-display{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px;}
+.fill-word-display{display:flex;gap:4px;justify-content:center;align-items:center;flex-wrap:nowrap;margin-top:8px;overflow-x:auto;padding:4px 8px;box-sizing:border-box;}
 .fill-letter{font-size:22px;font-weight:900;color:#fff;font-family:'Nunito',monospace;min-width:28px;text-align:center;}
 .fill-blank{width:36px;height:38px;border:3px solid rgba(255,255,255,.9);border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;font-family:'Nunito',monospace;}
 .fill-blank.active{background:rgba(255,255,255,.35);box-shadow:0 0 0 3px rgba(255,255,255,.5);}
@@ -2543,17 +2543,12 @@ function onFillBoxInput(e,inp){
   const val=inp.value.replace(/[^a-zA-Z]/g,'').toLowerCase();
   inp.value=val?val[val.length-1]:'';
   if(inp.value){
-    // 입력되면 바로 다음 칸으로 이동
     const inputs=getFillInputs();
     const idx=parseInt(inp.dataset.blankIdx);
-    if(idx<inputs.length-1){
-      inputs[idx+1].focus();
-    } else {
-      // 마지막 칸이면 자동 제출
-      inp.blur();
-      setTimeout(()=>submitFillAll(),150);
-    }
+    // 다음 칸으로 이동만 — 마지막 칸이어도 자동 제출 절대 안 함
+    if(idx<inputs.length-1) inputs[idx+1].focus();
   }
+  updateFillNextBtn();
 }
 
 function onFillBoxKeydown(e,inp){
